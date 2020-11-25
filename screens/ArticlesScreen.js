@@ -81,7 +81,7 @@ class ArticlesScreen extends React.Component {
       return;
     }
 
-    const PLATFORM_URL = "http://platform.x5gon.org/api/v1"
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
     const ENDPOINT = "/oer_materials/" + id
     const url = PLATFORM_URL + ENDPOINT
     
@@ -151,7 +151,10 @@ class ArticlesScreen extends React.Component {
 
     if(hasLoaded) {
 
-      const source = { uri:article.url, cache:true };
+      if(this.DEBUGGING) { console.log(article.url) }
+      const uri = article.url
+      // uri = uri.replace("http://", "https://")
+      const source = { uri:uri, cache:true };
       if(this.DEBUGGING) { console.log(source) }
 
       return (

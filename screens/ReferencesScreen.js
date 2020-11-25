@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import * as referenceAction from '../actions/referenceAction';
 
 import { Toolbar } from 'react-native-material-ui';
+import Dialog from "react-native-dialog";
 
 class ReferencesScreen extends React.Component {
 	
@@ -18,6 +19,9 @@ class ReferencesScreen extends React.Component {
     this.getReferenceObject=this.getReferenceObject.bind(this)
     this.getArticleReference=this.getArticleReference.bind(this)
     this.updateAesthetic = this.updateAesthetic.bind(this)
+    this.showDialog = this.showDialog.bind(this)
+    this.handleCancel = this.handleCancel.bind(this)
+    this.handleUpgrade = this.handleUpgrade.bind(this)
     this.openDocument = this.openDocument.bind(this)
     this.reference = this.reference.bind(this)
     this.document = this.document.bind(this)
@@ -25,10 +29,34 @@ class ReferencesScreen extends React.Component {
     this.DEBUGGING = true
     this.RESET_STATE = false
 
+    this.upgradeInputRef = React.createRef()
+
     this.state = {
       references: [],
       documents: [],
+      dialogVisible: false,
     }
+  }
+ 
+  showDialog() {
+    this.setState({ dialogVisible: true });
+  }
+ 
+  handleCancel() {
+    this.setState({ dialogVisible: false });
+  }
+ 
+  handleUpgrade() {
+    console.log("reference object")
+    
+    const code = this.upgradeInputRef.current._lastNativeText
+
+    if(code==="X6H98LA") {
+      console.log("ENABLED PRO")
+      this.props.enableProFeatures()
+    }
+
+    this.setState({ dialogVisible: false });
   }
 
   openDocument(material_id) {
@@ -113,7 +141,7 @@ class ReferencesScreen extends React.Component {
       return;
     }
 
-    const PLATFORM_URL = "http://platform.x5gon.org/api/v1"
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
     const ENDPOINT = "/oer_materials/" + id
     const url = PLATFORM_URL + ENDPOINT
 
@@ -143,7 +171,7 @@ class ReferencesScreen extends React.Component {
       return;
     }
 
-    const PLATFORM_URL = "http://platform.x5gon.org/api/v1"
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
     const ENDPOINT = "/oer_materials/" + id
     const url = PLATFORM_URL + ENDPOINT
     
@@ -272,7 +300,18 @@ class ReferencesScreen extends React.Component {
             centerElement="MyRefs"
           />
           <ScrollView contentContainerStyle={styles.container}>
-            <TouchableOpacity onPress={ () => {} } >
+            <Dialog.Container visible={this.state.dialogVisible}>
+              <Dialog.Title>Upgrade To Pro For Free</Dialog.Title>
+              <Dialog.Description>
+                We wanted to test the demand for this app. So to upgrade get in 
+                touch with Harry Liversedge or Nogg Harris and we will give you
+                the code for free
+              </Dialog.Description>
+              <Dialog.Input label="Enter code" textInputRef={this.upgradeInputRef}/>
+              <Dialog.Button label="Cancel" onPress={this.handleCancel} />
+              <Dialog.Button label="Upgrade" onPress={this.handleUpgrade} />
+            </Dialog.Container>
+            <TouchableOpacity onPress={this.showDialog} >
               <Card style={styles.upgradeCard}>
                 <CardItem style={{...styles.header, backgroundColor : "#686de0"}}>
                   <Body>
@@ -294,6 +333,9 @@ class ReferencesScreen extends React.Component {
               {isDocuments ? (
                 <View style={styles.itemsView}>
                   {this.document(documents[0], 0)}
+                  <View style={styles.loadingView}>
+                    <Text style={{...styles.headerText, paddingTop: 20}}>Upgrade to see more</Text>
+                  </View>
                 </View>
               ) : null}
             </View>
@@ -412,7 +454,8 @@ const mapDispatchToProps = (dispatch) => ({
   addReference: ref => dispatch(referenceAction.addReference(ref)),
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),
-  resetState: () => dispatch(referenceAction.resetState())
+  resetState: () => dispatch(referenceAction.resetState()),
+  enableProFeatures: () => dispatch(referenceAction.enableProFeatures()),
 })
 
 export default connect(

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, StatusBar, View, TouchableOpacity} from 'react-native';
+import { ScrollView, StyleSheet, StatusBar, View, 
+  TouchableOpacity, Image} from 'react-native';
 import axios from 'axios';
 import { Container, Header, Content, Card, CardItem, 
   Text, Body, Button } from 'native-base';
@@ -41,8 +42,8 @@ class DocumentsScreen extends React.Component {
   }
 
   getArticles(keyword, page, reset=false) {
-  	const PLATFORM_URL = "http://platform.x5gon.org/api/v1"
-  	const ENDPOINT = "/search"
+  	const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+  	const ENDPOINT = "/recommend/oer_materials"
   	const url = PLATFORM_URL + ENDPOINT
   	
     if(this.DEBUGGING) { console.log(keyword) }
@@ -71,6 +72,7 @@ class DocumentsScreen extends React.Component {
 			this.setState({
 				articles: articles,
         hasLoaded: true,
+        hasRequestFailed: false,
         nextPage: nextPage,
         stillArticles: nextPage < maxPages 
 			})
@@ -78,6 +80,11 @@ class DocumentsScreen extends React.Component {
       this.checkArticlesAreSafe()
 		})
 		.catch(error => {
+      // Unable to load the data (probably a network error)
+      this.setState({
+        hasLoaded: false,
+        hasRequestFailed: true
+      })
 			console.log(error);
 		})
   }
@@ -126,7 +133,7 @@ class DocumentsScreen extends React.Component {
   }
 
   search(event) {
-    const value = event._dispatchInstances.memoizedProps.value
+    const value = event.nativeEvent.text
     this.setState({ 
       keyword : value, 
       nextPage : 1,
@@ -137,7 +144,7 @@ class DocumentsScreen extends React.Component {
 
   render() {
 
-  	const { articles, hasLoaded, stillArticles, colors } = this.state
+  	const { articles, hasLoaded, stillArticles, colors, hasRequestFailed } = this.state
 
     if(this.DEBUGGING) { console.log("DocumentsScreen.render: has it loaded? " + hasLoaded) }
 
@@ -151,18 +158,46 @@ class DocumentsScreen extends React.Component {
               onSubmitEditing: this.search,
           }}
         />
-        {!hasLoaded ? (
+        {/* When an error has occurred */}
+        {hasRequestFailed ? (
           <View style={styles.centerContainer}>
+            
+            <Card style={{...styles.card, backgroundColor: '#e056fd'}}>
+              <CardItem style={{...styles.header, backgroundColor: '#e056fd'}}>
+                <Body>
+                  <Text style={styles.headerText}>{"Network Error"}</Text>
+                </Body>
+              </CardItem>
+              <CardItem style={{...styles.footer, backgroundColor: '#e056fd'}}>
+                <Text style={styles.baseText}>{"In order to run this app you must have a network connection. Please check your network connection and try again. If the problem persists please get in contact directly with me at harry@harrysrepairs.co.uk "}</Text>
+              </CardItem>
+            </Card>
+
             <Button
                 style={styles.button}
                 onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
+              >
+              <Body>
+                <Text style={styles.baseText}>Reload Articles</Text>
+              </Body>
+            </Button>   
+          </View>
+        ) : null}
+        {/* When the data hasn't loaded AND no error occurrs */}
+        {(!hasLoaded && !hasRequestFailed) ? (
+          <View style={styles.centerContainer}>
+            <Button
+                style={styles.button}
+                onPress={ () => {} }
               >
               <Body>
                 <Text style={styles.baseText}>Loading...</Text>
               </Body>
             </Button>   
           </View>
-        ) : (
+        ) : null}
+        {/* When the data has loaded */}
+        {hasLoaded ? (
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
               <Text style={{ color: '#fff', paddingTop : 10, paddingBottom: 20 }}>{"Showing " + articles.length + " results for " + this.state.keyword + ":"}</Text>
@@ -207,7 +242,7 @@ class DocumentsScreen extends React.Component {
               </Button>
             ) : null}
           </ScrollView>
-        )}
+        ) : null}
       </>
     )
   }
