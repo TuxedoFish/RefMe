@@ -11,6 +11,8 @@ import * as referenceAction from '../actions/referenceAction';
 
 import { Toolbar } from 'react-native-material-ui';
 
+import NetworkErrorImage from "../assets/images/network-error-image.svg";
+
 class DocumentsScreen extends React.Component {
 	
   constructor(props) {
@@ -166,6 +168,12 @@ class DocumentsScreen extends React.Component {
               <CardItem style={{...styles.header, backgroundColor: '#e056fd'}}>
                 <Body>
                   <Text style={styles.headerText}>{"Network Error"}</Text>
+                </Body>
+              </CardItem>
+              
+              <CardItem style={{...styles.header, backgroundColor: '#e056fd'}}>
+                <Body style={{alignItems: 'center'}}>
+                  <NetworkErrorImage width={150} height={120}/>
                 </Body>
               </CardItem>
               <CardItem style={{...styles.footer, backgroundColor: '#e056fd'}}>
