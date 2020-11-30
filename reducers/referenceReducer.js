@@ -68,13 +68,6 @@ export default (state = initialReferencesState, action = null) => {
         }
       }
 
-      case 'persist/REHYDRATE': {
-        console.log("REHYDRATE")
-        //rehydrating userStore to app
-        newState = { ...action.payload.references }
-        return newState
-      }
-
       default: {
         return state;
       }
