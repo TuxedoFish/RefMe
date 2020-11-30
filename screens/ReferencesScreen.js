@@ -10,6 +10,9 @@ import * as referenceAction from '../actions/referenceAction';
 import { Toolbar } from 'react-native-material-ui';
 import Dialog from "react-native-dialog";
 
+import NoDataFoundImage from "../assets/images/no-data-found.svg";
+import LoadingImage from "../assets/images/loading.svg";
+
 class ReferencesScreen extends React.Component {
 	
   constructor(props) {
@@ -243,6 +246,9 @@ class ReferencesScreen extends React.Component {
     const isReferences = references.length > 0
     const isDocuments = documents.length > 0
 
+    const isDocumentsToLoad = Object.keys(this.props.documents).length > 0
+    const isReferencesToLoad = Object.keys(this.props.references).length > 0
+
     if(user.isPro) {
       // Pro features enabled
       return (
@@ -262,7 +268,15 @@ class ReferencesScreen extends React.Component {
                 </View>
               ) : (
                 <View style={styles.loadingView}>
-                  <Text style={styles.baseText}>{this.props.documents > 0 ? 'Loading...' : 'No documents read recently'}</Text>
+                  {isDocumentsToLoad ? (
+                    <View style={{alignItems: 'center'}}>
+                      <LoadingImage width={150} height={150} />
+                    </View>
+                  ) : (
+                    <View style={{alignItems: 'center'}}>
+                      <NoDataFoundImage width={150} height={150} />
+                    </View>
+                  )}
                 </View>
               )}
             </View>
@@ -278,7 +292,15 @@ class ReferencesScreen extends React.Component {
                 </View>
               ) : (
                 <View style={styles.loadingView}>
-                  <Text style={styles.baseText}>{this.props.documents > 0 ? 'Loading...' : 'No references added yet'}</Text>
+                   {isReferencesToLoad ? (
+                    <View style={{alignItems: 'center'}}>
+                      <LoadingImage width={150} height={150} />
+                    </View>
+                  ) : (
+                    <View style={{alignItems: 'center'}}>
+                      <NoDataFoundImage width={150} height={150} />
+                    </View>
+                  )}
                 </View>
               )}
             </View>
