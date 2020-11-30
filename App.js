@@ -9,7 +9,7 @@ import rootReducer from './reducers'
 import { createLogger } from 'redux-logger';
 
 import { persistStore, persistReducer } from 'redux-persist';
-import { AsyncStorage } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import AppContainer from './navigation/AppNavigator';
@@ -30,7 +30,6 @@ const App: () => React$Node = () => {
   // Redux: Store
   const store = createStore(
     persistedReducer,
-    {},
     applyMiddleware(
       createLogger(),
     ),
