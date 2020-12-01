@@ -38,6 +38,7 @@ class ReferencesScreen extends React.Component {
       references: [],
       documents: [],
       dialogVisible: false,
+      loading: []
     }
   }
  
@@ -75,6 +76,7 @@ class ReferencesScreen extends React.Component {
     this.setState({
       references: [],
       documents: [],
+      loading: []
     })
 
     setTimeout(
@@ -88,9 +90,20 @@ class ReferencesScreen extends React.Component {
           console.log(this.props.documents)
         }
 
+        const HISTORY_TO_LOAD = 5
+        let i = 0
+
         for(var id in this.props.documents) {
-          const doc = this.props.documents[id]
-          this.getArticleReference(id, doc)
+          if(i < HISTORY_TO_LOAD) {
+            const { loading, documents } = this.state
+
+            if(!loading.includes(id)) {
+              const doc = this.props.documents[id]
+              this.getArticleReference(id, doc)
+              loading.push(id)
+              i++
+            }
+          }
         }
       }.bind(this), 200);
   }
@@ -221,14 +234,16 @@ class ReferencesScreen extends React.Component {
     console.log(this.props.documents)
     const currentpage = this.props.documents[doc.material_id].currentpage
 
+    const TITLE_LENGTH = 20;
+
     return (
       <TouchableOpacity onPress={ () => {this.openDocument(doc.material_id)} } 
         style={styles.touchableOpacity} key={index}>
         <Card style={styles.card}>
           <CardItem style={styles.header}>
             <Body>
-              <Text style={styles.headerText}>{doc.title}</Text>
-              <Text style={styles.baseText}>{doc.provider.provider_name}</Text>
+              <Text style={styles.headerText}>{doc.title.substring(0, TITLE_LENGTH) + "..."}</Text>
+              {/* <Text style={styles.baseText}>{doc.provider.provider_name}</Text> */}
             </Body>
             <Right>
               <Text style={styles.baseText}>{"page " + currentpage + " / " + doc.meta.numberofpages}</Text>
