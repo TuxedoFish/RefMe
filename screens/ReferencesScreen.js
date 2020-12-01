@@ -227,7 +227,7 @@ class ReferencesScreen extends React.Component {
 
     return (
       <>
-        <Text style={styles.bibliographyText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
+        <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
           date + ". Available from: " + ref.url} </Text>
         <Text> </Text>
       </>
@@ -243,7 +243,7 @@ class ReferencesScreen extends React.Component {
     console.log(this.props.documents)
     const currentpage = this.props.documents[doc.material_id].currentpage
 
-    const TITLE_LENGTH = 20;
+    const TITLE_LENGTH = 40;
 
     return (
       <TouchableOpacity onPress={ () => {this.openDocument(doc.material_id)} } 
@@ -251,7 +251,7 @@ class ReferencesScreen extends React.Component {
         <Card style={styles.card}>
           <CardItem style={styles.header}>
             <Body>
-              <Text style={styles.headerText}>{doc.title.substring(0, TITLE_LENGTH) + "..."}</Text>
+              <Text style={styles.baseText}>{doc.title.substring(0, TITLE_LENGTH) + "..."}</Text>
               {/* <Text style={styles.baseText}>{doc.provider.provider_name}</Text> */}
             </Body>
             <Right>
