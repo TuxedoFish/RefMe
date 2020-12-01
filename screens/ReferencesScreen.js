@@ -38,7 +38,8 @@ class ReferencesScreen extends React.Component {
       references: [],
       documents: [],
       dialogVisible: false,
-      loading: []
+      loadingDocs: [],
+      loadingRefs: []
     }
   }
  
@@ -76,13 +77,20 @@ class ReferencesScreen extends React.Component {
     this.setState({
       references: [],
       documents: [],
-      loading: []
+      loadingDocs: [],
+      loadingRefs: []
     })
 
     setTimeout(
       function() {
         this.props.references.map( (id) => {
-          this.getReferenceObject(id)    
+          const { loadingRefs } = this.state
+
+          if(!loadingRefs.includes(id)) {
+            this.getReferenceObject(id)    
+            loadingRefs.push(id)
+            this.setState({loadingRefs: loadingRefs})
+          }
         })
 
         if(this.DEBUGGING) {
@@ -95,12 +103,13 @@ class ReferencesScreen extends React.Component {
 
         for(var id in this.props.documents) {
           if(i < HISTORY_TO_LOAD) {
-            const { loading, documents } = this.state
+            const { loadingDocs } = this.state
 
-            if(!loading.includes(id)) {
+            if(!loadingDocs.includes(id)) {
               const doc = this.props.documents[id]
               this.getArticleReference(id, doc)
-              loading.push(id)
+              loadingDocs.push(id)
+              this.setState({loadingDocs: loadingDocs})
               i++
             }
           }
@@ -273,8 +282,8 @@ class ReferencesScreen extends React.Component {
           />
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.headerText}>
-                Recent Articles
+              <Text style={styles.mainHeaderText}>
+                History
               </Text>
 
               {isDocuments ? (
@@ -297,8 +306,8 @@ class ReferencesScreen extends React.Component {
             </View>
 
             <View style={styles.sectionContainer}>
-              <Text style={styles.headerText}>
-                Your bibliography
+              <Text style={styles.mainHeaderText}>
+                Bibliography
               </Text>
 
               {isReferences ? (
@@ -448,6 +457,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     paddingBottom: 10,
+  },
+  mainHeaderText: {
+    color: '#fff',
+    fontSize: 24,
+    paddingBottom: 10,
+    fontWeight: 'bold'
   },
   container: {
     flexGrow: 1,
