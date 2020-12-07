@@ -281,33 +281,10 @@ class ReferencesScreen extends React.Component {
             centerElement="MyRefs"
           />
           <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.mainHeaderText}>
-                History
-              </Text>
-
-              {isDocuments ? (
-                <View style={styles.itemsView}>
-                 {documents.map((document, i) => this.document(document, i))}
-                </View>
-              ) : (
-                <View style={styles.loadingView}>
-                  {isDocumentsToLoad ? (
-                    <View style={{alignItems: 'center'}}>
-                      <LoadingImage width={150} height={150} />
-                    </View>
-                  ) : (
-                    <View style={{alignItems: 'center'}}>
-                      <NoDataFoundImage width={150} height={150} />
-                    </View>
-                  )}
-                </View>
-              )}
-            </View>
 
             <View style={styles.sectionContainer}>
               <Text style={styles.mainHeaderText}>
-                Bibliography
+                References
               </Text>
 
               {isReferences ? (

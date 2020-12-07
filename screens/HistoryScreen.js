@@ -281,6 +281,7 @@ class HistoryScreen extends React.Component {
             centerElement="MyRefs"
           />
           <ScrollView contentContainerStyle={styles.container}>
+
             <View style={styles.sectionContainer}>
               <Text style={styles.mainHeaderText}>
                 History
@@ -288,11 +289,11 @@ class HistoryScreen extends React.Component {
 
               {isDocuments ? (
                 <View style={styles.itemsView}>
-                 {documents.map((document, i) => this.document(document, i))}
-                </View>
+                {documents.map((document, i) => this.document(document, i))}
+               </View>
               ) : (
                 <View style={styles.loadingView}>
-                  {isDocumentsToLoad ? (
+                   {isDocumentsToLoad ? (
                     <View style={{alignItems: 'center'}}>
                       <LoadingImage width={150} height={150} />
                     </View>
@@ -304,37 +305,6 @@ class HistoryScreen extends React.Component {
                 </View>
               )}
             </View>
-
-            <View style={styles.sectionContainer}>
-              <Text style={styles.mainHeaderText}>
-                Bibliography
-              </Text>
-
-              {isReferences ? (
-                <View style={styles.itemsView}>
-                 {references.map((reference, i) => this.reference(reference, i))}
-                </View>
-              ) : (
-                <View style={styles.loadingView}>
-                   {isReferencesToLoad ? (
-                    <View style={{alignItems: 'center'}}>
-                      <LoadingImage width={150} height={150} />
-                    </View>
-                  ) : (
-                    <View style={{alignItems: 'center'}}>
-                      <NoDataFoundImage width={150} height={150} />
-                    </View>
-                  )}
-                </View>
-              )}
-            </View>
-            
-            <Button
-              style={styles.button}
-              onPress={this.writeToClipboard}
-            >
-              <Text>Write To Clipboard</Text>
-            </Button>
           </ScrollView>
         </>
       );

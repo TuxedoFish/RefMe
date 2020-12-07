@@ -207,7 +207,7 @@ class DocumentsScreen extends React.Component {
         {/* When the data has loaded */}
         {hasLoaded ? (
           <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.centerContainer}>
+            <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
               <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
                 {articles.length + " results for " + this.state.keyword + ":"}
               </Text>
@@ -330,7 +330,9 @@ const styles = StyleSheet.create({
   },
   header5Text: {
     color: h5TextColor,
-    fontSize: h5TextSize
+    fontSize: h1TextSize,
+    paddingBottom: 10,
+    fontWeight: 'bold'
   },
   header1Text: {
     color: h1TextColor,
