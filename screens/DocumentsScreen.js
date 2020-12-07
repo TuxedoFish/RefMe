@@ -186,9 +186,7 @@ class DocumentsScreen extends React.Component {
                   style={styles.button}
                   onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
                 >
-                <Body>
-                  <Text style={styles.baseText}>Reload Articles</Text>
-                </Body>
+                <Text>Reload Articles</Text>
               </Button>   
             </View>
           </ScrollView>
@@ -201,9 +199,7 @@ class DocumentsScreen extends React.Component {
                   style={styles.button}
                   onPress={ () => {} }
                 >
-                <Body>
-                  <Text style={styles.baseText}>Loading...</Text>
-                </Body>
+                <Text>Loading...</Text>
               </Button>   
             </View>
           </ScrollView>
@@ -212,7 +208,7 @@ class DocumentsScreen extends React.Component {
         {hasLoaded ? (
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
-              <Text style={{ ...styles.header5Text, paddingTop : 10, paddingBottom: 20 }}>
+              <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
                 {"Showing " + articles.length + " results for " + this.state.keyword + ":"}
               </Text>
             </View>
@@ -228,15 +224,15 @@ class DocumentsScreen extends React.Component {
 
         		  return ( 
                 <TouchableOpacity onPress={ () => {this.openDocument(article.material_id)} } 
-                  style={{...styles.card, marginTop: 10, marginBottom: 10}} key={i}>
-                  <Card style={styles.card}>
-                		<CardItem style={styles.header}>
+                  style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
+                  <Card style={{...styles.card, backgroundColor: color}}>
+                		<CardItem style={{...styles.header, backgroundColor: color}}>
                 			<Body>
                         <Text style={styles.header1Text}>{article.title}</Text>
                         <Text style={styles.baseText}>{author}</Text>
                       </Body>
                 		</CardItem>
-                    <CardItem style={styles.footer}>
+                    <CardItem style={{...styles.footer,backgroundColor: color}}>
                       	<Text numberOfLines={4} style={styles.baseText}>
                           {article.description==null ? "No description" : article.description}
                         </Text>    
@@ -246,15 +242,12 @@ class DocumentsScreen extends React.Component {
               );
             })}
             {stillArticles ? (
-              <TouchableOpacity
+              <Button
+                style={styles.button}
                 onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
               >
-                <Card style={styles.button}>
-                  <Body>
-                    <Text style={styles.header5Text}>View more</Text>
-                  </Body>
-                </Card>
-              </TouchableOpacity>
+                <Text>Load more...</Text>
+            </Button>   
             ) : null}
           </ScrollView>
         ) : null}
@@ -278,14 +271,18 @@ const transparent = "#00000000" // For hidden borders
 // const backgroundColor = "#121212" // For the background
 // const elevatedColor = "#323232" // For the cards
 // const cardOutline = "#00000000" // For hidden borders
-// const pTextColor = "#000"
+const pTextColor = "#EEEEEE"
+const h1TextColor = "#FFFFFF"
+// const h5TextColor = "#a1a1a1"
+
 // Light mode
 const backgroundColor = "#FFFFFF" // For the background
 const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
-const pTextColor = "#666666"
-const h1TextColor = "#0068aa"
+// const pTextColor = "#666666"
+// const h1TextColor = "#0068aa"
 const h5TextColor = "#000000"
+const cardColor = "#2f95dc"
 
 /* Font Sizes */
 const pTextSize = 12
@@ -342,11 +339,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   button: {
-    backgroundColor: elevatedColor, 
-    marginTop: 10,
-    padding: 15,
-    borderRadius: borderRadius,
-    borderColor: '#000'
+    backgroundColor: cardColor,
+    borderRadius: borderRadius
   }
 });
 
