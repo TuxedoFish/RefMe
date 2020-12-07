@@ -282,11 +282,11 @@ const cardOutline = "#00000000" // For hidden borders
 // const pTextColor = "#666666"
 // const h1TextColor = "#0068aa"
 const h5TextColor = "#000000"
-const cardColor = "#2f95dc"
+const cardColor = "#2196f3"
 
 /* Font Sizes */
 const pTextSize = 12
-const h5TextSize = 12
+const h5TextSize = 16
 const h1TextSize = 21
 
 /* Miscellanous */
@@ -335,7 +335,6 @@ const styles = StyleSheet.create({
   header1Text: {
     color: h1TextColor,
     fontSize: h1TextSize,
-    textTransform: 'uppercase',
     fontWeight: "bold"
   },
   button: {

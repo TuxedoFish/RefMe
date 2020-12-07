@@ -433,7 +433,7 @@ const backgroundColor = "#FFFFFF" // For the background
 const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 const transparent = "#00000000" // For hidden borders
-const cardColor = "#2f95dc"
+const cardColor = "#2196f3"
 const pTextColor = "#EEEEEE"
 const h1TextColor = "#000"
 const h5TextColor = "#000000"
@@ -455,7 +455,6 @@ const styles = StyleSheet.create({
     width: `100%`,
     borderRadius: borderRadius,
     backgroundColor: cardColor,
-    borderColor: '#000'
   },
   upgradeCard: {
     width: `100%`,
