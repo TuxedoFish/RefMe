@@ -162,53 +162,55 @@ class DocumentsScreen extends React.Component {
         />
         {/* When an error has occurred */}
         {hasRequestFailed ? (
-          <View style={styles.centerContainer}>
-            
-            <Card style={{...styles.card, backgroundColor: '#e056fd'}}>
-              <CardItem style={{...styles.header, backgroundColor: '#e056fd'}}>
-                <Body>
-                  <Text style={styles.headerText}>{"Network Error"}</Text>
-                </Body>
-              </CardItem>
+          <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.centerContainer}>
               
-              <CardItem style={{...styles.header, backgroundColor: '#e056fd'}}>
-                <Body style={{alignItems: 'center'}}>
-                  <NetworkErrorImage width={150} height={120}/>
-                </Body>
-              </CardItem>
-              <CardItem style={{...styles.footer, backgroundColor: '#e056fd'}}>
-                <Text style={styles.baseText}>{"In order to run this app you must have a network connection. Please check your network connection and try again. If the problem persists please get in contact directly with me at harry@harrysrepairs.co.uk "}</Text>
-              </CardItem>
-            </Card>
+              <Card style={{...styles.card, backgroundColor: '#ff7979'}}>
+                <CardItem style={{...styles.card, backgroundColor: '#ff7979'}}>
+                  <Body>
+                    <Text style={styles.header1Text}>{"Network Error"}</Text>
+                  </Body>
+                </CardItem>
+                
+                <CardItem style={{...styles.header, backgroundColor: '#ff7979'}}>
+                  <Body style={{alignItems: 'center'}}>
+                    <NetworkErrorImage width={150} height={120}/>
+                  </Body>
+                </CardItem>
+                <CardItem style={{...styles.footer, backgroundColor: '#ff7979'}}>
+                  <Text style={styles.baseText}>{"In order to run this app you must have a network connection. Please check your network connection and try again. If the problem persists please get in contact directly with me at harry@harrysrepairs.co.uk "}</Text>
+                </CardItem>
+              </Card>
 
-            <Button
-                style={styles.button}
-                onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
-              >
-              <Body>
-                <Text style={styles.baseText}>Reload Articles</Text>
-              </Body>
-            </Button>   
-          </View>
+              <Button
+                  style={styles.button}
+                  onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
+                >
+                <Text>Reload Articles</Text>
+              </Button>   
+            </View>
+          </ScrollView>
         ) : null}
         {/* When the data hasn't loaded AND no error occurrs */}
         {(!hasLoaded && !hasRequestFailed) ? (
-          <View style={styles.centerContainer}>
-            <Button
-                style={styles.button}
-                onPress={ () => {} }
-              >
-              <Body>
-                <Text style={styles.baseText}>Loading...</Text>
-              </Body>
-            </Button>   
-          </View>
+          <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.centerContainer}>
+              <Button
+                  style={styles.button}
+                  onPress={ () => {} }
+                >
+                <Text>Loading...</Text>
+              </Button>   
+            </View>
+          </ScrollView>
         ) : null}
         {/* When the data has loaded */}
         {hasLoaded ? (
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
-              <Text style={{ color: '#fff', paddingTop : 10, paddingBottom: 20 }}>{"Showing " + articles.length + " results for " + this.state.keyword + ":"}</Text>
+              <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
+                {articles.length + " results for " + this.state.keyword + ":"}
+              </Text>
             </View>
 
         		{ articles.map((article, i) => {
@@ -222,15 +224,15 @@ class DocumentsScreen extends React.Component {
 
         		  return ( 
                 <TouchableOpacity onPress={ () => {this.openDocument(article.material_id)} } 
-                  style={{...styles.card, marginTop: 10, marginBottom: 10}} key={i}>
+                  style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
                   <Card style={{...styles.card, backgroundColor: color}}>
                 		<CardItem style={{...styles.header, backgroundColor: color}}>
                 			<Body>
-                        <Text style={styles.headerText}>{article.title}</Text>
+                        <Text style={styles.header1Text}>{article.title}</Text>
                         <Text style={styles.baseText}>{author}</Text>
                       </Body>
                 		</CardItem>
-                    <CardItem style={{...styles.footer, backgroundColor: color}}>
+                    <CardItem style={{...styles.footer,backgroundColor: color}}>
                       	<Text numberOfLines={4} style={styles.baseText}>
                           {article.description==null ? "No description" : article.description}
                         </Text>    
@@ -244,10 +246,8 @@ class DocumentsScreen extends React.Component {
                 style={styles.button}
                 onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
               >
-                <Body>
-                  <Text style={styles.baseText}>View more</Text>
-                </Body>
-              </Button>
+                <Text>Load more...</Text>
+            </Button>   
             ) : null}
           </ScrollView>
         ) : null}
@@ -265,42 +265,81 @@ DocumentsScreen.navigationOptions = {
   ),
 };
 
+/* Colors */
+const transparent = "#00000000" // For hidden borders
+// Dark mode
+// const backgroundColor = "#121212" // For the background
+// const elevatedColor = "#323232" // For the cards
+// const cardOutline = "#00000000" // For hidden borders
+const pTextColor = "#EEEEEE"
+const h1TextColor = "#FFFFFF"
+// const h5TextColor = "#a1a1a1"
+
+// Light mode
+const backgroundColor = "#FFFFFF" // For the background
+const elevatedColor = "#FFFFFF" // For the cards
+const cardOutline = "#00000000" // For hidden borders
+// const pTextColor = "#666666"
+// const h1TextColor = "#0068aa"
+const h5TextColor = "#000000"
+const cardColor = "#2196f3"
+
+/* Font Sizes */
+const pTextSize = 12
+const h5TextSize = 16
+const h1TextSize = 21
+
+/* Miscellanous */
+const borderRadius = 8;
+
+// borders - 2
+// header font size: 24
+// p font size: 12
+// backgound color - 
 const styles = StyleSheet.create({
   footer: {
-    borderRadius: 20,
+    borderRadius: borderRadius,
+    backgroundColor: elevatedColor,
+    borderColor: transparent
   },
   card: {
-    borderRadius: 20,
-    borderColor: '#000'
+    borderRadius: borderRadius,
+    backgroundColor: elevatedColor,
+    borderColor: cardOutline
   },
   header: {
-    borderRadius: 20,
+    borderRadius: borderRadius,
+    backgroundColor: elevatedColor,
+    borderColor: transparent
   },
   container: {
     flexGrow: 1,
     padding: 20,
     justifyContent: 'space-between',
-    backgroundColor: '#130f40',
+    backgroundColor: backgroundColor,
   },
   centerContainer: {
     flex: 1,
-    backgroundColor: '#130f40',
+    backgroundColor: backgroundColor,
     alignItems: 'center',
     justifyContent: 'center',
   },
   baseText: {
-    color: '#fff',
-    fontSize: 12,
+    color: pTextColor,
+    fontSize: pTextSize
   },
-  headerText: {
-    color: '#fff',
-    fontSize: 24,
+  header5Text: {
+    color: h5TextColor,
+    fontSize: h5TextSize
+  },
+  header1Text: {
+    color: h1TextColor,
+    fontSize: h1TextSize,
+    fontWeight: "bold"
   },
   button: {
-    backgroundColor: "#686de0", 
-    marginTop: 10,
-    borderRadius: 20,
-    borderColor: '#000'
+    backgroundColor: cardColor,
+    borderRadius: borderRadius
   }
 });
 

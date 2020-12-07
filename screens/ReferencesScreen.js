@@ -426,41 +426,60 @@ ReferencesScreen.navigationOptions = {
   ),
 };
 
+/* Colors */
+
+// Light mode
+const backgroundColor = "#FFFFFF" // For the background
+const elevatedColor = "#FFFFFF" // For the cards
+const cardOutline = "#00000000" // For hidden borders
+const transparent = "#00000000" // For hidden borders
+const cardColor = "#2196f3"
+const pTextColor = "#EEEEEE"
+const h1TextColor = "#000"
+const h5TextColor = "#000000"
+
+/* Font Sizes */
+const pTextSize = 12
+const h5TextSize = 12
+const h1TextSize = 21
+
+/* Miscellanous */
+const borderRadius = 8;
+
 const styles = StyleSheet.create({
   touchableOpacity: {
     width: `100%`,
-    borderRadius: 20,
+    borderRadius: borderRadius,
   },
   card: {
     width: `100%`,
-    borderRadius: 20,
-    backgroundColor: "#686de0",
-    borderColor: '#000'
+    borderRadius: borderRadius,
+    backgroundColor: cardColor,
   },
   upgradeCard: {
     width: `100%`,
-    borderRadius: 20,
+    borderRadius: borderRadius,
     paddingBottom: 10,
     marginBottom: 10,
-    backgroundColor: "#686de0",
+    backgroundColor: cardColor,
     borderColor: '#000'
   },
   header: {
-    borderRadius: 20,
-    backgroundColor: "#686de0",
+    borderRadius: borderRadius,
+    backgroundColor: cardColor,
   },
   baseText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: pTextSize,
   },
   headerText: {
-    color: '#fff',
-    fontSize: 15,
+    color: h1TextColor,
+    fontSize: h5TextSize,
     paddingBottom: 10,
   },
   mainHeaderText: {
-    color: '#fff',
-    fontSize: 24,
+    color: h1TextColor,
+    fontSize: h1TextSize,
     paddingBottom: 10,
     fontWeight: 'bold'
   },
@@ -468,7 +487,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     justifyContent: 'space-between',
-    backgroundColor: '#130f40'
+    backgroundColor: backgroundColor
   },
   sectionContainer: {
     flexGrow: 1,
@@ -493,6 +512,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 8,
   },
+  button: {
+    backgroundColor: cardColor,
+    borderRadius: borderRadius
+  }
 });
 
 const mapStateToProps = (state) => ({
