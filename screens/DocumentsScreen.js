@@ -165,19 +165,19 @@ class DocumentsScreen extends React.Component {
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
               
-              <Card style={styles.card}>
-                <CardItem style={styles.card}>
+              <Card style={{...styles.card, backgroundColor: '#ff7979'}}>
+                <CardItem style={{...styles.card, backgroundColor: '#ff7979'}}>
                   <Body>
                     <Text style={styles.header1Text}>{"Network Error"}</Text>
                   </Body>
                 </CardItem>
                 
-                <CardItem style={styles.header}>
+                <CardItem style={{...styles.header, backgroundColor: '#ff7979'}}>
                   <Body style={{alignItems: 'center'}}>
                     <NetworkErrorImage width={150} height={120}/>
                   </Body>
                 </CardItem>
-                <CardItem style={styles.footer}>
+                <CardItem style={{...styles.footer, backgroundColor: '#ff7979'}}>
                   <Text style={styles.baseText}>{"In order to run this app you must have a network connection. Please check your network connection and try again. If the problem persists please get in contact directly with me at harry@harrysrepairs.co.uk "}</Text>
                 </CardItem>
               </Card>
@@ -209,7 +209,7 @@ class DocumentsScreen extends React.Component {
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
               <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
-                {"Showing " + articles.length + " results for " + this.state.keyword + ":"}
+                {articles.length + " results for " + this.state.keyword + ":"}
               </Text>
             </View>
 
