@@ -8,7 +8,6 @@ import { connect } from 'react-redux';
 import * as referenceAction from '../actions/referenceAction';
 
 import { Toolbar } from 'react-native-material-ui';
-import Dialog from "react-native-dialog";
 
 import NoDataFoundImage from "../assets/images/no-data-found.svg";
 import LoadingImage from "../assets/images/loading.svg";

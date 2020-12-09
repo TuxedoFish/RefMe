@@ -21,6 +21,7 @@ class ReferencesScreen extends React.Component {
     this.writeToClipboard=this.writeToClipboard.bind(this)
     this.getReferenceObject=this.getReferenceObject.bind(this)
     this.updateAesthetic = this.updateAesthetic.bind(this)
+    this.openDocument = this.openDocument.bind(this)
     this.reference = this.reference.bind(this)
 
     this.DEBUGGING = true
@@ -52,6 +53,15 @@ class ReferencesScreen extends React.Component {
           }
         })
       }.bind(this), 200);
+  }
+
+  openDocument(material_id) {
+    console.log("Running...")
+    const { articles  } = this.state
+    
+    this.props.navigation.navigate('Articles', {
+      material_id: material_id,
+    })
   }
 
   componentDidMount() {
@@ -132,9 +142,19 @@ class ReferencesScreen extends React.Component {
 
     return (
       <>
-        <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-          date + ". Available from: " + ref.url} </Text>
-        <Text> </Text>
+        <TouchableOpacity onPress={ () => {this.openDocument(ref.material_id)} } 
+          style={styles.touchableOpacity} key={index}>
+          <Card style={styles.card}>
+            <CardItem style={styles.header}>
+              <Body>
+                <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
+                  date + ". Available from: " + ref.url} 
+                </Text>
+              </Body>
+            </CardItem>
+          </Card>
+        </TouchableOpacity>
+        
       </>
     )
   }
@@ -227,7 +247,7 @@ const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 const transparent = "#00000000" // For hidden borders
 const cardColor = "#2196f3"
-const pTextColor = "#000"
+const pTextColor = "#fff"
 const h1TextColor = "#000"
 const h5TextColor = "#000000"
 
