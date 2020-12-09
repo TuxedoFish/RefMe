@@ -7,6 +7,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import DocumentsScreen from '../screens/DocumentsScreen';
 import ArticlesScreen from '../screens/ArticlesScreen';
 import ReferencesScreen from '../screens/ReferencesScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 
 const config = Platform.select({
   web: {},
@@ -22,7 +23,7 @@ const DocumentsStack = createStackNavigator(
 );
 
 DocumentsStack.navigationOptions = {
-  tabBarLabel: 'Papers',
+  tabBarLabel: 'Resources',
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -43,18 +44,35 @@ const ReferencesStack = createStackNavigator(
 );
 
 ReferencesStack.navigationOptions = {
-  tabBarLabel: 'Refs',
+  tabBarLabel: 'References',
   tabBarIcon: ({ focused }) => (
-    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-book' : 'md-book'} />
+    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-list-box' : 'md-list-box'} />
   ),
 };
 
+const HistoryStack = createStackNavigator(
+  {
+    Refs: HistoryScreen
+  },
+  config
+);
+
 ReferencesStack.path = '';
+
+HistoryStack.navigationOptions = {
+  tabBarLabel: 'History',
+  tabBarIcon: ({ focused }) => (
+    <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-folder-open' : 'md-folder-open'} />
+  ),
+};
+
+HistoryStack.path = '';
 
 const tabNavigator = createBottomTabNavigator(
   {
     DocumentsStack: {screen: DocumentsStack},
-    ReferencesStack: {screen: ReferencesStack}
+    ReferencesStack: {screen: ReferencesStack},
+    HistoryStack: {screen: HistoryStack}
   },
   {
     tabBarOptions: {

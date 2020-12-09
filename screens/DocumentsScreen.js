@@ -153,7 +153,7 @@ class DocumentsScreen extends React.Component {
     return (
       <>
         <Toolbar
-          centerElement="MyRefs"
+          centerElement="RefMe"
           searchable={{
               autoFocus: true,
               placeholder: 'Search',
@@ -207,7 +207,7 @@ class DocumentsScreen extends React.Component {
         {/* When the data has loaded */}
         {hasLoaded ? (
           <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.centerContainer}>
+            <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
               <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
                 {articles.length + " results for " + this.state.keyword + ":"}
               </Text>
@@ -276,7 +276,7 @@ const h1TextColor = "#FFFFFF"
 // const h5TextColor = "#a1a1a1"
 
 // Light mode
-const backgroundColor = "#FFFFFF" // For the background
+const backgroundColor = "#F5F5F6" // For the background
 const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 // const pTextColor = "#666666"
@@ -330,7 +330,9 @@ const styles = StyleSheet.create({
   },
   header5Text: {
     color: h5TextColor,
-    fontSize: h5TextSize
+    fontSize: h1TextSize,
+    paddingBottom: 10,
+    fontWeight: 'bold'
   },
   header1Text: {
     color: h1TextColor,
