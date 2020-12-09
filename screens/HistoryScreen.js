@@ -18,15 +18,9 @@ class HistoryScreen extends React.Component {
   constructor(props) {
     super(props)
     
-    this.writeToClipboard=this.writeToClipboard.bind(this)
-    this.getReferenceObject=this.getReferenceObject.bind(this)
     this.getArticleReference=this.getArticleReference.bind(this)
     this.updateAesthetic = this.updateAesthetic.bind(this)
-    this.showDialog = this.showDialog.bind(this)
-    this.handleCancel = this.handleCancel.bind(this)
-    this.handleUpgrade = this.handleUpgrade.bind(this)
     this.openDocument = this.openDocument.bind(this)
-    this.reference = this.reference.bind(this)
     this.document = this.document.bind(this)
 
     this.DEBUGGING = true
@@ -35,33 +29,10 @@ class HistoryScreen extends React.Component {
     this.upgradeInputRef = React.createRef()
 
     this.state = {
-      references: [],
       documents: [],
       dialogVisible: false,
-      loadingDocs: [],
-      loadingRefs: []
+      loadingDocs: []
     }
-  }
- 
-  showDialog() {
-    this.setState({ dialogVisible: true });
-  }
- 
-  handleCancel() {
-    this.setState({ dialogVisible: false });
-  }
- 
-  handleUpgrade() {
-    console.log("reference object")
-    
-    const code = this.upgradeInputRef.current._lastNativeText
-
-    if(code==="X6H98LA") {
-      console.log("ENABLED PRO")
-      this.props.enableProFeatures()
-    }
-
-    this.setState({ dialogVisible: false });
   }
 
   openDocument(material_id) {
@@ -75,29 +46,12 @@ class HistoryScreen extends React.Component {
 
   updateAesthetic() {
     this.setState({
-      references: [],
       documents: [],
       loadingDocs: [],
-      loadingRefs: []
     })
 
     setTimeout(
       function() {
-        this.props.references.map( (id) => {
-          const { loadingRefs } = this.state
-
-          if(!loadingRefs.includes(id)) {
-            this.getReferenceObject(id)    
-            loadingRefs.push(id)
-            this.setState({loadingRefs: loadingRefs})
-          }
-        })
-
-        if(this.DEBUGGING) {
-          console.log("Finding documents: ")
-          console.log(this.props.documents)
-        }
-
         const HISTORY_TO_LOAD = 5
         let i = 0
 
@@ -138,16 +92,14 @@ class HistoryScreen extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     console.log("HistoryScreen.componentDidUpdate")
     
-    if(typeof prevProps.documents === "undefined" ||
-      typeof prevProps.references === "undefined") {
+    if(typeof prevProps.documents === "undefined") {
       console.log("props undefined")
       return false
     }
 
     const isNewDocuments = prevProps.documents != this.props.documents
-    const isNewReferences = prevProps.references != this.props.references
     
-    if(isNewReferences || isNewDocuments) {
+    if(isNewDocuments) {
       console.log("props have changed")
       this.updateAesthetic()
       return true
@@ -155,36 +107,6 @@ class HistoryScreen extends React.Component {
 
     console.log("props are identical")
     return false
-  }
-
-  getReferenceObject(id) {
-    if(id in this.props.missing) {
-      this.setState({
-        references: [...this.state.references, this.props.missing[id]],
-      })
-
-      return;
-    }
-
-    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
-    const ENDPOINT = "/oer_materials/" + id
-    const url = PLATFORM_URL + ENDPOINT
-
-    if(this.DEBUGGING) { console.log("Getting reference: " + id) }
-    
-    axios.get(url, {} )
-      .then(res => {
-        const article = res.data.oer_materials
-
-        if(typeof article !== "undefined") {
-          this.setState({
-            references: [...this.state.references, article],
-          })
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      })
   }
 
   getArticleReference(id, doc) {
@@ -215,23 +137,6 @@ class HistoryScreen extends React.Component {
       .catch(error => {
         console.log(error);
       })
-  }
-
-  reference(ref, index) {
-    if(this.DEBUGGING) { console.log("rendering reference: " + ref) }
-    const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
-
-    var initials = ref.provider.provider_name.match(/\b\w/g) || [];
-    initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-    if(this.DEBUGGING) { console.log(initials) }
-
-    return (
-      <>
-        <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-          date + ". Available from: " + ref.url} </Text>
-        <Text> </Text>
-      </>
-    )
   }
 
   document(doc, index) {
@@ -267,18 +172,15 @@ class HistoryScreen extends React.Component {
     const { references, documents } = this.state;
     const { user } = this.props
 
-    const isReferences = references.length > 0
     const isDocuments = documents.length > 0
-
     const isDocumentsToLoad = Object.keys(this.props.documents).length > 0
-    const isReferencesToLoad = Object.keys(this.props.references).length > 0
 
     if(user.isPro) {
       // Pro features enabled
       return (
         <>
           <Toolbar
-            centerElement="MyRefs"
+            centerElement="RefMe"
           />
           <ScrollView contentContainerStyle={styles.container}>
 
@@ -308,82 +210,8 @@ class HistoryScreen extends React.Component {
           </ScrollView>
         </>
       );
-    } else {
-      // Pro features not enabled
-    	return (
-        <>
-          <Toolbar
-            centerElement="MyRefs"
-          />
-          <ScrollView contentContainerStyle={styles.container}>
-            <Dialog.Container visible={this.state.dialogVisible}>
-              <Dialog.Title>Upgrade To Pro For Free</Dialog.Title>
-              <Dialog.Description>
-                We wanted to test the demand for this app. So to upgrade get in 
-                touch with Harry Liversedge or Nogg Harris and we will give you
-                the code for free
-              </Dialog.Description>
-              <Dialog.Input label="Enter code" textInputRef={this.upgradeInputRef}/>
-              <Dialog.Button label="Cancel" onPress={this.handleCancel} />
-              <Dialog.Button label="Upgrade" onPress={this.handleUpgrade} />
-            </Dialog.Container>
-            <TouchableOpacity onPress={this.showDialog} >
-              <Card style={styles.upgradeCard}>
-                <CardItem style={{...styles.header, backgroundColor : "#686de0"}}>
-                  <Body>
-                    <Text style={styles.headerText}>Enable Pro</Text>
-                    <Text style={styles.baseText}>*Gain access to a bibliography</Text>
-                    <Text style={styles.baseText}>*View your history</Text>
-                    <Text style={styles.baseText}>*Never lose your page</Text>
-                  </Body>
-                </CardItem>
-              </Card>
-            </TouchableOpacity>
-            
-            <View style={styles.sectionContainer}>
-              <Text style={styles.headerText}>
-                Recent Articles
-              </Text>
-              <Text note style={{ paddingBottom : 10 }} >Pro feature</Text>
-
-              {isDocuments ? (
-                <View style={styles.itemsView}>
-                  {this.document(documents[0], 0)}
-                  <View style={styles.loadingView}>
-                    <Text style={{...styles.headerText, paddingTop: 20}}>Upgrade to see more</Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
-
-            <View style={styles.sectionContainer}>
-              <Text style={styles.headerText}>
-                Your bibliography
-              </Text>
-              <Text note>Pro feature</Text>
-            </View>
-          </ScrollView>
-        </>
-    	);
-    }
+    } 
   }
-
-	async writeToClipboard(){
-	  const { references } = this.state;
-	  var content = []
-    console.log("Outputting to clipboard")
-
-	  references.map((ref, index) => {
-      const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
-
-      var initials = ref.provider.provider_name.match(/\b\w/g) || [];
-      initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-      
-	  	content.push((index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-                  date + ". Available from: " + ref.url)
-	  })
-	  await Clipboard.setString(content.join(', '));
-	}
 
 }
 
@@ -399,7 +227,7 @@ HistoryScreen.navigationOptions = {
 /* Colors */
 
 // Light mode
-const backgroundColor = "#FFFFFF" // For the background
+const backgroundColor = "#F5F5F6" // For the background
 const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 const transparent = "#00000000" // For hidden borders

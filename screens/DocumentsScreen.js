@@ -153,7 +153,7 @@ class DocumentsScreen extends React.Component {
     return (
       <>
         <Toolbar
-          centerElement="MyRefs"
+          centerElement="RefMe"
           searchable={{
               autoFocus: true,
               placeholder: 'Search',
@@ -276,7 +276,7 @@ const h1TextColor = "#FFFFFF"
 // const h5TextColor = "#a1a1a1"
 
 // Light mode
-const backgroundColor = "#FFFFFF" // For the background
+const backgroundColor = "#F5F5F6" // For the background
 const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 // const pTextColor = "#666666"
