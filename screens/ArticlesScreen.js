@@ -147,7 +147,8 @@ class ArticlesScreen extends React.Component {
   
   render() {
 
-    const { hasLoaded, article, currentpage, lastpage, isReferenced } = this.state
+    const { hasLoaded, article, currentpage, 
+      lastpage, isReferenced, id } = this.state
 
     if(hasLoaded) {
 
@@ -181,8 +182,9 @@ class ArticlesScreen extends React.Component {
           <Pdf
             ref={(pdf) => { this.pdf = pdf; }}
             source={source}
-            onLoadComplete={(numberOfPages,filePath)=>{
+            onLoadComplete={(numberOfPages,filePath, extras, toc)=>{
                 if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
+                this.props.addReferenceMeta(id, extras)
                 this.setState({ lastpage : numberOfPages })
             }}
             onPageChanged={(page,numberOfPages)=>{
@@ -305,6 +307,7 @@ const mapDispatchToProps = (dispatch) => ({
   addReference: ref => dispatch(referenceAction.addReference(ref)),
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),
+  addReferenceMeta: (id, meta) => dispatch(referenceAction.addReferenceMeta(id, meta)),
 })
 
 export default connect(

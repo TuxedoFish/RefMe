@@ -121,6 +121,18 @@ class ReferencesScreen extends React.Component {
       .then(res => {
         const article = res.data.oer_materials
 
+        console.log(article)
+
+        if(typeof(this.props.references_meta) !== "undefined") {
+          if(id in this.props.references_meta) {
+            const meta = this.props.references_meta[id]
+            const newArticle = {...article, ...meta}
+
+            console.log("NEW COMBINED")
+            console.log(newArticle)
+          }
+        }
+
         if(typeof article !== "undefined") {
           this.setState({
             references: [...this.state.references, article],
@@ -133,6 +145,7 @@ class ReferencesScreen extends React.Component {
   }
 
   reference(ref, index) {
+
     if(this.DEBUGGING) { console.log("rendering reference: " + ref) }
     const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
 
@@ -334,6 +347,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     references: state.references.ids,
     documents: state.references.docs,
+    references_meta: state.references.meta,
     missing: state.references.missing,
     user: state.references.user,
 })
