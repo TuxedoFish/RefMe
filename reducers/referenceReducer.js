@@ -57,7 +57,7 @@ export default (state = initialReferencesState, action = null) => {
         const { id, doc } = action
         console.log("referenceReducer.uploadMissingDocument")
 
-        newMissing = state.missing
+        let newMissing = state.missing
         newMissing[id] = doc
         return {
           ...state,
@@ -69,7 +69,7 @@ export default (state = initialReferencesState, action = null) => {
         const { id, meta } = action
         console.log("referenceReducer.addReferenceMeta")
 
-        newMeta = state.meta
+        let newMeta = state.meta
         if(typeof(newMeta) === "undefined") {
           newMeta = {}
         }

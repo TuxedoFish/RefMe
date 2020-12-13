@@ -121,15 +121,10 @@ class ReferencesScreen extends React.Component {
       .then(res => {
         const article = res.data.oer_materials
 
-        console.log(article)
-
         if(typeof(this.props.references_meta) !== "undefined") {
           if(id in this.props.references_meta) {
             const meta = this.props.references_meta[id]
-            const newArticle = {...article, ...meta}
-
-            console.log("NEW COMBINED")
-            console.log(newArticle)
+            article["meta"] = meta
           }
         }
 
@@ -146,12 +141,34 @@ class ReferencesScreen extends React.Component {
 
   reference(ref, index) {
 
-    if(this.DEBUGGING) { console.log("rendering reference: " + ref) }
-    const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
+    console.log("Rendering reference")
+    if(this.DEBUGGING) { console.log(ref.meta) }
 
-    var initials = ref.provider.provider_name.match(/\b\w/g) || [];
+    // Extra meta information on reference
+    const meta = ref.meta
+    
+    // The accessed date => From storing this when added
+    // TODO store the accessed date and display in reference
+    const accessed_date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
+
+    // The published date => From pdf meta data
+    const published_date = meta.modDate
+
+    // The author => From the meta data
+    const author = meta.author==="" ? "Unknown" : meta.author
+
+    // Author initials
+    var initials = author.match(/\b\w/g) || [];
     initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-    if(this.DEBUGGING) { console.log(initials) }
+
+    // Publisher
+    const publisher = ref.provider.provider_name
+
+    // Link
+    const link = ref.url
+
+    // Title of paper
+    const title = ref.title
 
     return (
       <>
@@ -160,8 +177,8 @@ class ReferencesScreen extends React.Component {
           <Card style={styles.card}>
             <CardItem style={styles.header}>
               <Body>
-                <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-                  date + ". Available from: " + ref.url} 
+                <Text style={styles.baseText}> {(index+1) + ": " + author + ", " + initials + ", " + title + ", " + publisher + ", " + 
+                  published_date + ". Available from: " + ref.url} 
                 </Text>
               </Body>
             </CardItem>
