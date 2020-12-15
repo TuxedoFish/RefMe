@@ -7,6 +7,12 @@ export const addReference = (ref) => ({
 	type: actionTypes.ADD_REFERENCE,
 })
 
+export const addReferenceMeta = (id, meta) => ({
+	id,
+	meta,
+	type: actionTypes.ADD_REFERENCE_META
+})
+
 export const removeReference = (ref) => ({
 	ref,
 	type: actionTypes.REMOVE_REFERENCE,

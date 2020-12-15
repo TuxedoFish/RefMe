@@ -21,6 +21,7 @@ class ReferencesScreen extends React.Component {
     this.writeToClipboard=this.writeToClipboard.bind(this)
     this.getReferenceObject=this.getReferenceObject.bind(this)
     this.updateAesthetic = this.updateAesthetic.bind(this)
+    this.openDocument = this.openDocument.bind(this)
     this.reference = this.reference.bind(this)
 
     this.DEBUGGING = true
@@ -52,6 +53,15 @@ class ReferencesScreen extends React.Component {
           }
         })
       }.bind(this), 200);
+  }
+
+  openDocument(material_id) {
+    console.log("Running...")
+    const { articles  } = this.state
+    
+    this.props.navigation.navigate('Articles', {
+      material_id: material_id,
+    })
   }
 
   componentDidMount() {
@@ -111,6 +121,13 @@ class ReferencesScreen extends React.Component {
       .then(res => {
         const article = res.data.oer_materials
 
+        if(typeof(this.props.references_meta) !== "undefined") {
+          if(id in this.props.references_meta) {
+            const meta = this.props.references_meta[id]
+            article["meta"] = meta
+          }
+        }
+
         if(typeof article !== "undefined") {
           this.setState({
             references: [...this.state.references, article],
@@ -123,18 +140,51 @@ class ReferencesScreen extends React.Component {
   }
 
   reference(ref, index) {
-    if(this.DEBUGGING) { console.log("rendering reference: " + ref) }
-    const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
 
-    var initials = ref.provider.provider_name.match(/\b\w/g) || [];
+    console.log("Rendering reference")
+    if(this.DEBUGGING) { console.log(ref.meta) }
+
+    // Extra meta information on reference
+    const meta = ref.meta
+    
+    // The accessed date => From storing this when added
+    // TODO store the accessed date and display in reference
+    const accessed_date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
+
+    // The published date => From pdf meta data
+    const published_date = meta.modDate
+
+    // The author => From the meta data
+    const author = meta.author==="" ? "Unknown" : meta.author
+
+    // Author initials
+    var initials = author.match(/\b\w/g) || [];
     initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-    if(this.DEBUGGING) { console.log(initials) }
+
+    // Publisher
+    const publisher = ref.provider.provider_name
+
+    // Link
+    const link = ref.url
+
+    // Title of paper
+    const title = ref.title
 
     return (
       <>
-        <Text style={styles.baseText}> {(index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-          date + ". Available from: " + ref.url} </Text>
-        <Text> </Text>
+        <TouchableOpacity onPress={ () => {this.openDocument(ref.material_id)} } 
+          style={styles.touchableOpacity} key={index}>
+          <Card style={styles.card}>
+            <CardItem style={styles.header}>
+              <Body>
+                <Text style={styles.baseText}> {(index+1) + ": " + author + ", " + initials + ", " + title + ", " + publisher + ", " + 
+                  published_date + ". Available from: " + ref.url} 
+                </Text>
+              </Body>
+            </CardItem>
+          </Card>
+        </TouchableOpacity>
+        
       </>
     )
   }
@@ -227,7 +277,7 @@ const elevatedColor = "#FFFFFF" // For the cards
 const cardOutline = "#00000000" // For hidden borders
 const transparent = "#00000000" // For hidden borders
 const cardColor = "#2196f3"
-const pTextColor = "#000"
+const pTextColor = "#fff"
 const h1TextColor = "#000"
 const h5TextColor = "#000000"
 
@@ -314,6 +364,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     references: state.references.ids,
     documents: state.references.docs,
+    references_meta: state.references.meta,
     missing: state.references.missing,
     user: state.references.user,
 })

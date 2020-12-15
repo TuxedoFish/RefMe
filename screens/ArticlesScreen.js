@@ -33,6 +33,7 @@ class ArticlesScreen extends React.Component {
       hasLoaded: false,
       article: null,
       id: id,
+      metadata: {},
       currentpage: 1,
       lastpage: 1,
       isReferenced: this.props.references.includes(id+"")
@@ -147,7 +148,8 @@ class ArticlesScreen extends React.Component {
   
   render() {
 
-    const { hasLoaded, article, currentpage, lastpage, isReferenced } = this.state
+    const { hasLoaded, article, currentpage, 
+      lastpage, isReferenced, id } = this.state
 
     if(hasLoaded) {
 
@@ -181,9 +183,13 @@ class ArticlesScreen extends React.Component {
           <Pdf
             ref={(pdf) => { this.pdf = pdf; }}
             source={source}
-            onLoadComplete={(numberOfPages,filePath)=>{
+            onLoadComplete={(numberOfPages,filePath, extras, toc)=>{
                 if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
-                this.setState({ lastpage : numberOfPages })
+                this.props.addReferenceMeta(id, extras)
+                this.setState({ 
+                  lastpage : numberOfPages,
+                  metadata: extras
+                })
             }}
             onPageChanged={(page,numberOfPages)=>{
                 if(this.DEBUGGING) { console.log(`current page: ${page}`) }
@@ -305,6 +311,7 @@ const mapDispatchToProps = (dispatch) => ({
   addReference: ref => dispatch(referenceAction.addReference(ref)),
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),
+  addReferenceMeta: (id, meta) => dispatch(referenceAction.addReferenceMeta(id, meta)),
 })
 
 export default connect(

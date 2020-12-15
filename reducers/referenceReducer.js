@@ -3,6 +3,7 @@ import * as actionTypes from '../actions/actionTypes';
 export const initialReferencesState = {
   ids: [],
   docs: {},
+  meta: {},
   missing: {},
   user: {
     isPro: true,
@@ -56,7 +57,7 @@ export default (state = initialReferencesState, action = null) => {
         const { id, doc } = action
         console.log("referenceReducer.uploadMissingDocument")
 
-        newMissing = state.missing
+        let newMissing = state.missing
         newMissing[id] = doc
         return {
           ...state,
@@ -64,6 +65,22 @@ export default (state = initialReferencesState, action = null) => {
         }
       }
 
+      case actionTypes.ADD_REFERENCE_META: {
+        const { id, meta } = action
+        console.log("referenceReducer.addReferenceMeta")
+
+        let newMeta = state.meta
+        if(typeof(newMeta) === "undefined") {
+          newMeta = {}
+        }
+        newMeta[id] = meta
+
+        return {
+          ...state,
+          meta: newMeta
+        }
+      }
+      
       case actionTypes.REVERT_STATE: {
         console.log("referenceReducer.resetState: should only be used in debugging")
         return initialReferencesState

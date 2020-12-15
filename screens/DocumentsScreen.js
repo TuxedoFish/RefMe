@@ -229,7 +229,6 @@ class DocumentsScreen extends React.Component {
                 		<CardItem style={{...styles.header, backgroundColor: color}}>
                 			<Body>
                         <Text style={styles.header1Text}>{article.title}</Text>
-                        <Text style={styles.baseText}>{author}</Text>
                       </Body>
                 		</CardItem>
                     <CardItem style={{...styles.footer,backgroundColor: color}}>
