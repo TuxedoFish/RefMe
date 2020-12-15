@@ -33,6 +33,7 @@ class ArticlesScreen extends React.Component {
       hasLoaded: false,
       article: null,
       id: id,
+      metadata: {},
       currentpage: 1,
       lastpage: 1,
       isReferenced: this.props.references.includes(id+"")
@@ -185,7 +186,10 @@ class ArticlesScreen extends React.Component {
             onLoadComplete={(numberOfPages,filePath, extras, toc)=>{
                 if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
                 this.props.addReferenceMeta(id, extras)
-                this.setState({ lastpage : numberOfPages })
+                this.setState({ 
+                  lastpage : numberOfPages,
+                  metadata: extras
+                })
             }}
             onPageChanged={(page,numberOfPages)=>{
                 if(this.DEBUGGING) { console.log(`current page: ${page}`) }
