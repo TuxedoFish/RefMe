@@ -1,305 +1,236 @@
+// Required React import
 import React from 'react';
-import { ScrollView, StyleSheet, StatusBar, View, Dimensions } from 'react-native';
-import { ExpoLinksView } from '@expo/samples';
-import axios from 'axios';
-import { Container, Header, Content, Card, CardItem, 
-    Body, Text, Icon, Button} from 'native-base';
-import moment from 'moment';
 
+// UI Elements
+import { StyleSheet, View, Dimensions } from 'react-native';
+import { Text, Icon, Button} from 'native-base';
+import { Toolbar } from 'react-native-material-ui';
+
+// Axios - For making GET/POST requests
+import axios from 'axios';
+
+// Redux for persisting data across sessions
 import { connect } from 'react-redux';
 import * as referenceAction from '../actions/referenceAction';
+import * as historyAction from '../actions/history/actions';
 
+// For displaying the PDF 
 import Pdf from 'react-native-pdf';
 
-import { Toolbar } from 'react-native-material-ui';
+// Configuration for page
+import { PAGE_TYPES } from './ArticleScreen/Constants';
+import { styles } from './ArticleScreen/Styles'
+import { Directions } from 'react-native-gesture-handler';
 
 class ArticlesScreen extends React.Component {
 
   constructor(props) {
   	super(props)
 
+    // TODO: Define this in redux
     this.DEBUGGING = false
 
+    // Set the title bar to loading until pdf is loaded in
     this.props.navigation.setParams({ title: "Loading..."})
+    // Get the details about the article navigating to
+    // const id = this.props.navigation.getParam('material_id', {})
+    const { navigation } = this.props
+    const id = navigation.getParam('id', "err")
+    const url = navigation.getParam('url', "err")
+    const title = navigation.getParam('title', "Error: Title undefined")
+    const type = navigation.getParam('type', PAGE_TYPES.UNDEFINED)
 
-    const id = this.props.navigation.getParam('material_id', {})
+    // Assign the top navigation bar the title of the article
+    navigation.setParams({ article_title: title })
 
-    if(this.DEBUGGING) { 
-      console.log("References: ")
-      console.log(this.props.references) 
-    }
-
+    // Initial state defining the class
     this.state = {
-      hasLoaded: false,
-      article: null,
-      id: id,
+      params: {
+        id: id,
+        url: url,
+        title: title,
+        type: type
+      },
       metadata: {},
-      currentpage: 1,
-      lastpage: 1,
+      currentpage: currentPage,
+      length: 1,
       isReferenced: this.props.references.includes(id+"")
     }
-
-  	this.toggleReference = this.toggleReference.bind(this)
-    this.getArticle = this.getArticle.bind(this)
   }
 
-  componentDidMount() {
-    this.getArticle()
+  /*
+  From the history, looks for whether there is a current
+  history item and if there is then fetches the last page
+  it was left on... 
+  TODO: Use new history reducer
+  */
+  getCurrentPage() {
+    const { params: {id} } = this.state
+    const { documents } = this.props
+    return id in documents ? documents[id].currentpage : 1
   }
 
-  componentDidUpdate(prevProps) {
-    if(prevProps != this.props) {
-      const { id } = this.state
-
-      if(id in this.props.documents) {
-        if(typeof this.pdf !== "undefined") {
-          const startPage = this.props.documents[id].currentpage
-          this.pdf.setPage(startPage) 
-          this.setState({ currentpage : startPage })
-        }
-      }
-    }
-  }
-
-  getArticle() {
-    const { id } = this.state
-
-    if(id in this.props.missing) {
-      var startPage = 1
-
-      if(id in this.props.documents) {
-        startPage = this.props.documents[id].currentpage
-      }
-
-      this.setState({
-        hasLoaded: true,
-        article: this.props.missing[id],
-        currentpage: startPage,
-      })
-
-      console.log(this.props.missing)
-
-      return;
-    }
-
-    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
-    const ENDPOINT = "/oer_materials/" + id
-    const url = PLATFORM_URL + ENDPOINT
-    
-    axios.get(url, {} )
-      .then(res => {
-        const article = res.data.oer_materials
-
-        console.log("request finished: " + url + " for material: " + id)
-        console.log("response obtained: ")
-        console.log(res.data)
-
-        if(typeof article !== "undefined") {
-          var startPage = 1
-
-          if(id in this.props.documents) {
-            startPage = this.props.documents[id].currentpage
-          }
-
-          this.setState({
-            hasLoaded: true,
-            article: article,
-            currentpage: startPage,
-          })
-
-          this.pdf.setPage(startPage) 
-
-          this.props.navigation.setParams({ article_title: article.title })
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      })
-  }
-
+  /*
+  toggleReference
+    Adds or removes the reference from redux depending on whether
+    it already exists.
+  */
   toggleReference() {
+    // DEBUGGING
     if(this.DEBUGGING) { console.log("toggling reference") }
 
+    // TODO: Should check the isReferenced variable directly from redux
     const { id, isReferenced } = this.state
+    const { removeReference, addReference }
 
+    // Makes a call to the relevant redux action
     if(isReferenced) {
-      this.props.removeReference(id)  
+      removeReference(id)  
     } else { 
-      this.props.addReference(id)
+      addReference(id)
     }
     
+    // Updates the local state of the component
     this.setState({ isReferenced : !this.state.isReferenced })
+    
+    // DEBUGGING
     if(this.DEBUGGING) { 
       console.log("References:") 
       console.log(this.props.references) 
     }
   }
 
-  updateDocument() {
-    if(this.DEBUGGING) { console.log("updating document state") }
-    
-    const { id, currentpage, lastpage} = this.state
+  /* pushToHistory
+    - Take the current state of reading and store it
+    - (TODO: Pass into an API to begin recommendation engine)
+    - Current page / length of document - To save place
+    - Timestamp - To know how to filter / sort history
+    - Title, ID, URL - To be able to identify the doc
+  */
+  pushToHistory = () => {
+    // Get together the data to add to the history
 
-    this.props.updateDocument(id, {
-      currentpage: currentpage,
-      numberofpages: lastpage,
+    // id - The uid of the item (Currently from x5gon)
+    // currentpage - The page that the user currently has open
+    // lastpage - The length of the PDF
+    const { 
+      id, 
+      currentpage, 
+      length
+    } = this.state
+    // lastModified - The timestamp of when the history was updated (as a string)
+    // Converted back via parseISO
+    const lastmodified = new Date().toISOString();
+
+    // Push to the redux function
+    const { pushToHistory } = this.props
+    pushToHistory(
+      id,
+      {
+        id: id,
+        currentpage: currentpage,
+        length : length,
+        lastmodified: lastmodified,
+      }
+    )
+
+    // TODO: Pass into recommendation engine API
+  }
+
+  // When the PDF loads grab meta data and update history
+  onPdfLoaded = (numberOfPages, filePath, extras, toc) => {
+
+    if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
+    
+    this.props.addReferenceMeta(id, extras)
+    
+    this.setState({ 
+      length : numberOfPages,
+      metadata: extras
     })
+
+    // Fetch history and set current page
+    var currentPage = this.getCurrentPage()
+    this.pdf.setPage(startPage) 
+  }
+
+  // When the page has changed update the history
+  onPdfPageChanged = (page, numberOfPages) => {
+
+    if(this.DEBUGGING) { console.log(`current page: ${page}`) }
+    this.pushToHistory()
+    this.setState({ currentpage : page})
+  }
+
+  /* changePage - the down and up arrow keys on the side of the PDF viewer */
+  changePage = (isNextPage) => {
+
+    const { currentPage, length } = this.state
+
+    const nextPage = currentPage + (isNextPage * 1);
+
+    if(nextPage < length-1 && nextPage > 0) { 
+      this.pdf.setPage(nextPage) 
+      this.setState({ currentpage: nextPage})
+    }
   }
   
   render() {
 
-    const { hasLoaded, article, currentpage, 
-      lastpage, isReferenced, id } = this.state
+    const { currentpage, length, 
+      params: {url, id, type, title } } = this.state
 
-    if(hasLoaded) {
+    const { references, documents } = this.props
+    const isReferenced = references.includes(id+"")
 
-      if(this.DEBUGGING) { console.log(article.url) }
-      const uri = article.url
-      // uri = uri.replace("http://", "https://")
-      const source = { uri:uri, cache:true };
-      if(this.DEBUGGING) { console.log(source) }
+    // Formatting for react-native-pdf
+    const source = { uri:url, cache:true }
 
-      return (
-        <>
-          <Toolbar
-            centerElement={article.title}
-            rightElement={{
-              menu: {
-                icon: "more-vert",
-                labels: [isReferenced ? "Remove from Bibliography" : "Save To Bibliography"]
-              }
-            }}
-            onRightElementPress={ (label) => {
-              switch(label.index) {
-                case 0:
-                this.toggleReference()
-                break;
+    return (
+      <>
+        <Toolbar
+          centerElement={title}
+          rightElement={{
+            menu: {
+              icon: "more-vert",
+              labels: [isReferenced ? "Remove from Bibliography" : "Save To Bibliography"]
+            }
+          }}
+          onRightElementPress={ (label) => {
+            switch(label.index) {
+              case 0:
+              this.toggleReference()
+              break;
 
-                default:
-                console.log("Unknown action: " + label.index)
-              }
-            }}
-          />
-          <Pdf
-            ref={(pdf) => { this.pdf = pdf; }}
-            source={source}
-            onLoadComplete={(numberOfPages,filePath, extras, toc)=>{
-                if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
-                this.props.addReferenceMeta(id, extras)
-                this.setState({ 
-                  lastpage : numberOfPages,
-                  metadata: extras
-                })
-            }}
-            onPageChanged={(page,numberOfPages)=>{
-                if(this.DEBUGGING) { console.log(`current page: ${page}`) }
-                this.updateDocument()
-                this.setState({ currentpage : page})
-            }}
-            onError={(error)=>{
-                if(this.DEBUGGING) { console.log(error) }
-            }}
-            onPressLink={(uri)=>{
-                if(this.DEBUGGING) { console.log(`Link presse: ${uri}`) }
-            }}
-            style={styles.pdf}/>
-          <View style={styles.floatingButtonsContainer}>
-            <Button light style={styles.floatingButton}
-              onPress={() => {
-                if(this.DEBUGGING) { console.log(currentpage + " : " + lastpage) }
-
-                if(currentpage>1) { 
-                  this.pdf.setPage(currentpage - 1) 
-                  this.setState({ currentpage : currentpage - 1})
-                }
-              }}>
-              <Icon name='arrow-up' />
-            </Button>
-            <Button light style={styles.floatingButton}
-              onPress={() => {
-                if(this.DEBUGGING) { console.log(currentpage + " : " + lastpage) }
-
-                if(currentpage<lastpage) { 
-                  this.pdf.setPage(currentpage + 1) 
-                  this.setState({ currentpage : currentpage + 1})
-                }
-              }}>
-              <Icon name='arrow-down' />
-            </Button>
-          </View>
-        </>
-      )
-    } else {
-      return (
-        <>
-          <Toolbar
-            centerElement="Loading..."
-          />
-          <View style={styles.centerContainer}>
-            <Text styles={styles.baseText}>Loading...</Text>   
-          </View>
-        </>
-      )
-    }
-	}
+              default:
+              console.log("Unknown action: " + label.index)
+            }
+          }}
+        />
+        <Pdf
+          ref={(pdf) => { this.pdf = pdf; }}
+          source={source}
+          onLoadComplete={this.onPdfLoaded}
+          onPageChanged={this.onPdfPageChanged}
+          onError={(error)=>{ console.log(error) }}
+          onPressLink={(uri)=>{ console.log(`Link pressed: ${uri}`) }}
+          style={styles.pdf}/>
+        <View style={styles.floatingButtonsContainer}>
+          <Button light style={styles.floatingButton} onPress={this.changePage(false)}>
+            <Icon name='arrow-up' />
+          </Button>
+          <Button light style={styles.floatingButton} onPress={this.changePage(true)} >
+            <Icon name='arrow-down' />
+          </Button>
+        </View>
+      </>
+    )
+  }
 }
 
 ArticlesScreen.navigationOptions = {
   header: null,
 }
-
-const styles = StyleSheet.create({
-  header: {
-    borderRadius: 20,
-  },
-  footer: {
-    borderRadius: 20,
-  },
-  card: {
-    margin: 20,
-    borderRadius: 20,
-  },
-  baseText: {
-    color: '#000'
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textDecorationLine: 'underline' 
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-  },
-  centerContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bottomCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-  },
-  baseText: {
-    color: '#000'
-  },
-  pdf: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-  },
-  floatingButtonsContainer: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-  },
-  floatingButton: {
-  }
-});
 
 const mapStateToProps = (state) => ({
   references: state.references.ids,
@@ -308,6 +239,8 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
+  pushToHistory: (uid, historyItem) => dispatch(historyAction.pushToHistory(uid, historyItem)),
+
   addReference: ref => dispatch(referenceAction.addReference(ref)),
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),

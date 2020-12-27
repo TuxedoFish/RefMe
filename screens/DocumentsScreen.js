@@ -12,6 +12,7 @@ import * as referenceAction from '../actions/referenceAction';
 import { Toolbar } from 'react-native-material-ui';
 
 import NetworkErrorImage from "../assets/images/network-error-image.svg";
+import { PAGE_TYPES } from './ArticleScreen/Constants';
 
 class DocumentsScreen extends React.Component {
 	
@@ -21,7 +22,6 @@ class DocumentsScreen extends React.Component {
     this.DEBUGGING = false
 
   	this.getArticles = this.getArticles.bind(this)
-  	this.openDocument = this.openDocument.bind(this)
     this.search = this.search.bind(this)
     this.checkArticlesAreSafe = this.checkArticlesAreSafe.bind(this)
   	
@@ -125,12 +125,21 @@ class DocumentsScreen extends React.Component {
     }
   }
 
-  openDocument(material_id) {
+  openDocument = (material_id, url, type, title) => {
     console.log("Running...")
     const { articles  } = this.state
     
+    // Pass in parameters to the page:
+    // id: the id of the page
+    // url: the url to the content
+    // type: type of content
+    // title: title of the content
   	this.props.navigation.navigate('Articles', {
-  		material_id: material_id,
+      material_id: material_id,
+      id: id,
+      url: url,
+      type: type,
+      title: title,
   	})
   }
 
@@ -223,7 +232,15 @@ class DocumentsScreen extends React.Component {
               const color = colors[i%5]
 
         		  return ( 
-                <TouchableOpacity onPress={ () => {this.openDocument(article.material_id)} } 
+                <TouchableOpacity 
+                  onPress={ () => {
+                    this.openDocument(
+                      article.material_id,
+                      article.url,
+                      PAGE_TYPES.PDF,
+                      article.title
+                    )
+                  }} 
                   style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
                   <Card style={{...styles.card, backgroundColor: color}}>
                 		<CardItem style={{...styles.header, backgroundColor: color}}>

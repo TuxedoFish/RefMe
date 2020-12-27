@@ -1,9 +1,15 @@
 import { combineReducers } from 'redux';
-import references from './referenceReducer';
+import { initialHistoryState } from './historyStoredReducer';
+import { initialCitationsState } from './citationStoredReducer';
+import references, { initialReferencesState } from './referenceReducer';
 
 // Redux: Root Reducer
-const rootReducer = combineReducers({
+export const rootReducer = combineReducers({
     references: references
 });
-// Exports
-export default rootReducer;
+
+export const initialState = {
+    references: initialReferencesState,
+    history: initialHistoryState,
+    citations: initialCitationsState
+}
