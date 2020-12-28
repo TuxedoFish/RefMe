@@ -125,20 +125,16 @@ class ReferencesScreen extends React.Component {
   }
 
   // TODO: Update this and introduce sharing functionality
-	async writeToClipboard(){
-	  const { references } = this.state;
+	writeToClipboard = async () => {
+    
+    const { citations: {currentById, allIds} } = this.props
+    const { citationStyle } = this.state
 	  var content = []
-    console.log("Outputting to clipboard")
 
-	  references.map((ref, index) => {
-      const date = ref.creation_date===null ? ref.retrieved_date : ref.creation_date
+    {allIds.map((id, i) => {
+      content.push(generateTextForCitation(currentById[id], i, citationStyle))
+    })}
 
-      var initials = ref.provider.provider_name.match(/\b\w/g) || [];
-      initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-      
-	  	content.push((index+1) + ": " + ref.provider.provider_name + ", " + initials + ", " + ref.title + ", " + ref.provider.provider_name + ", " + 
-                  date + ". Available from: " + ref.url)
-	  })
 	  await Clipboard.setString(content.join(', '));
 	}
 
