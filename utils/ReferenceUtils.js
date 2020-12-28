@@ -4,6 +4,7 @@
 
 import axios from 'axios'
 import { PAGE_TYPES } from "../screens/ArticlesScreen/Constants"
+import { getDateFromISOString } from './DateUtils'
 
 // onFailed(error)
 export async function generateCitation(id, meta, onSuccess, onFailed) {
@@ -74,5 +75,5 @@ export function generateTextForCitation(citation, index, style) {
 
     // Return the raw text style of the citation
     return (index+1) + ": " + author + ", " + initials + ", " + title + ", " + publisher + ", " + 
-    published_date + ". Available from: " + url
+    getDateFromISOString(accessed_date) + ". Available from: " + url
 }

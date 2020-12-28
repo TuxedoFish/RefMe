@@ -73,9 +73,10 @@ class ArticlesScreen extends React.Component {
 
   /* Check whether the current document already has or not a reference */
   isDocumentCited = () => {
-    const { citations } = this.props
+    const { citations: allIds } = this.props
     const { params: {id} } = this.state
-    return id in citations.allIds
+    console.log(allIds)
+    return id in allIds
   }
 
   /*
