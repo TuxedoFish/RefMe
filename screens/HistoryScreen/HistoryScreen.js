@@ -17,6 +17,7 @@ import NoDataFoundImage from "../../assets/images/no-data-found.svg";
 // Specific page stylings and constants
 import { styles_dict } from './Styles.js'
 import { compose } from 'redux';
+import { convertISOString } from '../../utils/DateUtils';
 const styles = StyleSheet.create(styles_dict)
 
 class HistoryScreen extends React.Component {
@@ -42,6 +43,7 @@ class HistoryScreen extends React.Component {
   historyItem = (item, index) => {
 
     const TITLE_LENGTH = 40;
+    const formatted_date = convertISOString(item.lastmodified)
 
     return (
       <TouchableOpacity onPress={ () => {this.openDocument(item)} } 
@@ -52,6 +54,7 @@ class HistoryScreen extends React.Component {
               <Text style={styles.baseText}>{item.title.substring(0, TITLE_LENGTH) + "..."}</Text>
             </Body>
             <Right>
+              <Text style={styles.baseText}>{formatted_date}</Text>
               <Text style={styles.baseText}>{"page " + item.currentpage + " / " + item.length}</Text>
             </Right>
           </CardItem>
