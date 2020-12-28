@@ -5,6 +5,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, Button} from 'native-base';
 import { Toolbar } from 'react-native-material-ui';
+import LoadingOverlay from '../../components/LoadingOverlay'
 
 // Axios - For making GET/POST requests
 import axios from 'axios';
@@ -53,6 +54,10 @@ class ArticlesScreen extends React.Component {
         title: title,
         type: type
       },
+      overlay: {
+        visible: false,
+        title: "Err"
+      },
       meta: {},
       currentpage: 1,
       length: 1
@@ -99,14 +104,31 @@ class ArticlesScreen extends React.Component {
       // if there is no reference then add it (async)
       generateCitation(id, meta, 
         (id, citation) => {
+          // Add to redux
           addCitationItem(id, citation)
+          // Now notify user that has finished loading and set timeout
+          this.updateOverlay(true, "Finished!")
+          setTimeout( () => { this.updateOverlay(false, "None") }, 500)
         },
         (error) => {
           console.log("Error: failed to generate citation")
           console.log(error)
+          this.updateOverlay(true, "Error: " + error)
+          setTimeout( () => { this.updateOverlay(false, "None") }, 500)
         })
+      // Now we set the state to loading...
+      this.updateOverlay(true, "Generating Citation...")
     }
 
+  }
+
+  updateOverlay = (isVisible, title) => {
+    this.setState({
+      overlay: {
+        visible: isVisible,
+        title: title
+      }
+    })
   }
 
   /* pushToHistory
@@ -190,7 +212,8 @@ class ArticlesScreen extends React.Component {
   
   render() {
 
-    const { params: {url, id, type, title } } = this.state
+    const { params: {url, id, type, title },
+      overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
 
     const { references } = this.props
     const isReferenced = references.includes(id+"")
@@ -235,6 +258,8 @@ class ArticlesScreen extends React.Component {
             <Icon name='arrow-down' />
           </Button>
         </View>
+
+        <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
       </>
     )
   }
