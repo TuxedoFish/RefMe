@@ -73,7 +73,7 @@ class ReferencesScreen extends React.Component {
   render() {
 
     // Citations are stored entirerly in Redux now
-    const { citations } = this.props;
+    const { citations: {currentById: citationItems} } = this.props;
 
     return (
       <>
@@ -87,9 +87,9 @@ class ReferencesScreen extends React.Component {
               References
             </Text>
 
-            {citations.length > 0 ? (
+            {citationItems.length > 0 ? (
               <View style={styles.itemsView}>
-                {citations.map((reference, i) => this.reference(reference, i))}
+                {citationItems.map((reference, i) => this.reference(reference, i))}
               </View>
             ) : (
               <View style={{alignItems: 'center'}}>

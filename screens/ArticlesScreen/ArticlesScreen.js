@@ -2,7 +2,7 @@
 import React from 'react';
 
 // UI Elements
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Icon, Button} from 'native-base';
 import { Toolbar } from 'react-native-material-ui';
 
@@ -54,7 +54,7 @@ class ArticlesScreen extends React.Component {
         type: type
       },
       meta: {},
-      currentpage: currentPage,
+      currentpage: 1,
       length: 1,
     }
   }
@@ -129,8 +129,8 @@ class ArticlesScreen extends React.Component {
     const lastmodified = new Date().toISOString();
 
     // Push to the redux function
-    const { pushToHistory } = this.props
-    pushToHistory(
+    const { pushToHistory: dispatchPushToHistory } = this.props
+    dispatchPushToHistory(
       id,
       {
         id: id,

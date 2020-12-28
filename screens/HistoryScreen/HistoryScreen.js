@@ -16,6 +16,7 @@ import NoDataFoundImage from "../../assets/images/no-data-found.svg";
 
 // Specific page stylings and constants
 import { styles_dict } from './Styles.js'
+import { compose } from 'redux';
 const styles = StyleSheet.create(styles_dict)
 
 class HistoryScreen extends React.Component {
@@ -60,8 +61,10 @@ class HistoryScreen extends React.Component {
   }
 
   render() {
-    // History is now stored in Redux
-    const { history } = this.props
+    // History is now stored in Redux - 
+    // TODO: Sort these elements by date
+    const { history: {byId, allIds} } = this.props
+    console.log(allIds)
 
     return (
       <>
@@ -75,9 +78,9 @@ class HistoryScreen extends React.Component {
               History
             </Text>
 
-            {history.length > 0 ? (
+            {allIds.length > 0 ? (
               <View style={styles.itemsView}>
-              {history.map((item, i) => this.historyItem(item, i))}
+              {allIds.map((id, i) => this.historyItem(byId[id], i))}
               </View>
             ) : (
               <View style={{alignItems: 'center'}}>

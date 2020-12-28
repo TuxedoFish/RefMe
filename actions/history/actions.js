@@ -1,6 +1,7 @@
 import * as actionTypes from './actionTypes'
 
-export const pushToHistory = (item) => ({
+export const pushToHistory = (id, item) => ({
+	id,
 	item,
 	type: actionTypes.PUSH_TO_HISTORY,
 })

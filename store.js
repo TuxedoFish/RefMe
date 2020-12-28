@@ -15,7 +15,7 @@ const persistConfig = {
   // State reconciler
   stateReconciler: hardSet, 
   // Whitelist
-  whitelist: ['references']
+  whitelist: ['references', 'history', 'citations']
 };
 // Middleware: Redux Persist Persisted Reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -29,15 +29,6 @@ const store = createStore(
 );
 // Middleware: Redux Persist Persister
 const persistor = persistStore(store);
-
-AsyncStorage.getAllKeys((err, keys) => {
-  AsyncStorage.multiGet(keys, (error, stores) => {
-    stores.map((result, i, store) => {
-      console.log('log async: ',{ [store[i][0]]: store[i][1] });
-      return true;
-    });
-  });
-});
 
 // Exports
 export {

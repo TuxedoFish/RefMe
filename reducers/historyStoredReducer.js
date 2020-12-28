@@ -12,7 +12,7 @@ import * as actionTypes from '../actions/history/actionTypes';
 // allIds: [10937]
 // ]
 export const initialHistoryState = {
-  byId: [],
+  byId: {},
   allIds: []
 }
 
@@ -20,18 +20,27 @@ export const history = (state = initialHistoryState, action = null) => {
     
     switch (action.type) {
     
-      case actionTypes.PUSH_TO_HSITORY: {
+      case actionTypes.PUSH_TO_HISTORY: {
+        
         const { id, item } = action
-        console.log("historyStoredReducer.pushToHistory: " + id)
 
         // Update the items 
-        let { byId: items, allIds: ids } = this.state
+        let { byId: items, allIds: ids } = state
         items[id] = item
-        if(!id in ids) { ids.push(id) }
+        
+        // Remove old id and re-add to retain time order
+        if(ids.includes(id)) { 
+          for( var i = 0; i < ids.length; i++){ 
+            if (ids[i] === id) { ids.splice(i, 1);}
+          }
+        }
+        ids.unshift(id)
+
+        console.log(id in ids)
 
         return {
           byId: items,
-          allIds, ids
+          allIds: ids
         }
       }
 
