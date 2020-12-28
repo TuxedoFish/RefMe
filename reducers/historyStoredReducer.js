@@ -16,7 +16,7 @@ export const initialHistoryState = {
   allIds: []
 }
 
-export default (state = initialReferencesState, action = null) => {
+export const history = (state = initialHistoryState, action = null) => {
     
     switch (action.type) {
     

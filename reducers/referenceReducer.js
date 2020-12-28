@@ -10,7 +10,7 @@ export const initialReferencesState = {
   }
 }
 
-export default (state = initialReferencesState, action = null) => {
+export const references = (state = initialReferencesState, action = null) => {
     switch (action.type) {
       case actionTypes.ADD_REFERENCE: {
         const { ref } = action

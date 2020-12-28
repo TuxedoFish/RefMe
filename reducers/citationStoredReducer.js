@@ -1,12 +1,28 @@
 import * as actionTypes from '../actions/citation/actionTypes';
 
+// V 1.0 schema (uid is using x5gon id):
+// (default/current)ById: [
+  // 10937: {
+  //   id: 10937,
+  //   author: "John Doe",
+  //   title: "ML Algorithms",
+  //   uploadedDate: 30817921,
+  //   accessedDate: 30817921,
+  //   publisher: "VideoLectures.Net",
+  //   url: "https://www.website.com",
+  //   pages: "1-4",
+  //   ...
+  // }
+// allIds: [10937]
+// ]
+// For V2.0 => ( Future: journal issue number / journal volume number / journal )
 export const initialCitationsState = {
   defaultById: {},
   currentById: {},
   allIds: []
 }
 
-export default (state = initialReferencesState, action = null) => {
+export const citations = (state = initialCitationsState, action = null) => {
     
     switch (action.type) {
     
@@ -20,7 +36,7 @@ export default (state = initialReferencesState, action = null) => {
       }
 
       
-      case actionTypes.CLEAR_HISTORY: {
+      case actionTypes.CLEAR_CITATIONS: {
         
       }
 

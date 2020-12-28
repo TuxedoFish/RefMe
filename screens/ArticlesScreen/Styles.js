@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const styles_dict = {
     header: {
       borderRadius: 20,
     },
@@ -51,4 +51,4 @@ export const styles = StyleSheet.create({
     },
     floatingButton: {
     }
-  });
+  }

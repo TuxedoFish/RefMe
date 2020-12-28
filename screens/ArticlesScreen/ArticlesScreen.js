@@ -2,8 +2,8 @@
 import React from 'react';
 
 // UI Elements
-import { StyleSheet, View, Dimensions } from 'react-native';
-import { Text, Icon, Button} from 'native-base';
+import { View } from 'react-native';
+import { Icon, Button} from 'native-base';
 import { Toolbar } from 'react-native-material-ui';
 
 // Axios - For making GET/POST requests
@@ -11,16 +11,18 @@ import axios from 'axios';
 
 // Redux for persisting data across sessions
 import { connect } from 'react-redux';
-import * as referenceAction from '../actions/referenceAction';
-import * as historyAction from '../actions/history/actions';
+import * as referenceAction from '../../actions/referenceAction';
+import * as historyAction from '../../actions/history/actions';
+import * as citationAction from '../../actions/citation/actions'
 
 // For displaying the PDF 
 import Pdf from 'react-native-pdf';
 
 // Configuration for page
-import { PAGE_TYPES } from './ArticleScreen/Constants';
-import { styles } from './ArticleScreen/Styles'
-import { Directions } from 'react-native-gesture-handler';
+import { PAGE_TYPES } from './Constants';
+import { styles_dict } from './Styles.js'
+const styles = StyleSheet.create(styles_dict)
+import { generateCitation } from '../../utils/ReferenceUtils';
 
 class ArticlesScreen extends React.Component {
 
@@ -51,10 +53,9 @@ class ArticlesScreen extends React.Component {
         title: title,
         type: type
       },
-      metadata: {},
+      meta: {},
       currentpage: currentPage,
       length: 1,
-      isReferenced: this.props.references.includes(id+"")
     }
   }
 
@@ -64,10 +65,17 @@ class ArticlesScreen extends React.Component {
   it was left on... 
   TODO: Use new history reducer
   */
-  getCurrentPage() {
+  getCurrentPage = () => {
     const { params: {id} } = this.state
     const { documents } = this.props
     return id in documents ? documents[id].currentpage : 1
+  }
+
+  /* Check whether the current document already has or not a reference */
+  isDocumentCited = () => {
+    const { citations } = this.props
+    const { params: {id} } = this.state
+    return id in citations.allIds
   }
 
   /*
@@ -75,29 +83,28 @@ class ArticlesScreen extends React.Component {
     Adds or removes the reference from redux depending on whether
     it already exists.
   */
-  toggleReference() {
-    // DEBUGGING
-    if(this.DEBUGGING) { console.log("toggling reference") }
+  toggleReference = () => {
 
     // TODO: Should check the isReferenced variable directly from redux
-    const { id, isReferenced } = this.state
-    const { removeReference, addReference }
+    const { id, meta } = this.state
+    const { deleteCitationItem, addCitationItem } = this.props
+    const isReferenced = this.isDocumentCited()
 
     // Makes a call to the relevant redux action
     if(isReferenced) {
-      removeReference(id)  
+      // If there is already a reference then remove it (sync)
+      deleteCitationItem(id)
     } else { 
-      addReference(id)
+      // if there is no reference then add it (async)
+      generateCitation(id, meta, 
+        (id, citation) => {
+          addCitationItem(id, citation)
+        },
+        (error) => {
+          console.log("Error: failed to generate citation")
+        })
     }
-    
-    // Updates the local state of the component
-    this.setState({ isReferenced : !this.state.isReferenced })
-    
-    // DEBUGGING
-    if(this.DEBUGGING) { 
-      console.log("References:") 
-      console.log(this.props.references) 
-    }
+
   }
 
   /* pushToHistory
@@ -107,15 +114,14 @@ class ArticlesScreen extends React.Component {
     - Timestamp - To know how to filter / sort history
     - Title, ID, URL - To be able to identify the doc
   */
-  pushToHistory = () => {
+  pushToHistory = (page) => {
     // Get together the data to add to the history
 
-    // id - The uid of the item (Currently from x5gon)
+    // id/url/title/type - The uid of the item (Currently from x5gon) and identifiable information
     // currentpage - The page that the user currently has open
     // lastpage - The length of the PDF
     const { 
-      id, 
-      currentpage, 
+      params: {id, url, title, type}, 
       length
     } = this.state
     // lastModified - The timestamp of when the history was updated (as a string)
@@ -128,13 +134,22 @@ class ArticlesScreen extends React.Component {
       id,
       {
         id: id,
-        currentpage: currentpage,
+        currentpage: page,
         length : length,
         lastmodified: lastmodified,
+        title: title,
+        url: url,
+        type: type
       }
     )
 
     // TODO: Pass into recommendation engine API
+  }
+
+  changePage = (page) => {
+    this.pdf.setPage(page) 
+    this.pushToHistory(page)
+    this.setState({ currentpage: page})
   }
 
   // When the PDF loads grab meta data and update history
@@ -142,23 +157,21 @@ class ArticlesScreen extends React.Component {
 
     if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
     
-    this.props.addReferenceMeta(id, extras)
-    
     this.setState({ 
       length : numberOfPages,
-      metadata: extras
+      meta: extras
     })
 
     // Fetch history and set current page
-    var currentPage = this.getCurrentPage()
-    this.pdf.setPage(startPage) 
+    var page = this.getCurrentPage()
+    this.changePage(page)
   }
 
   // When the page has changed update the history
   onPdfPageChanged = (page, numberOfPages) => {
 
     if(this.DEBUGGING) { console.log(`current page: ${page}`) }
-    this.pushToHistory()
+    this.pushToHistory(page)
     this.setState({ currentpage : page})
   }
 
@@ -170,17 +183,15 @@ class ArticlesScreen extends React.Component {
     const nextPage = currentPage + (isNextPage * 1);
 
     if(nextPage < length-1 && nextPage > 0) { 
-      this.pdf.setPage(nextPage) 
-      this.setState({ currentpage: nextPage})
+      this.changePage(nextPage)
     }
   }
   
   render() {
 
-    const { currentpage, length, 
-      params: {url, id, type, title } } = this.state
+    const { params: {url, id, type, title } } = this.state
 
-    const { references, documents } = this.props
+    const { references } = this.props
     const isReferenced = references.includes(id+"")
 
     // Formatting for react-native-pdf
@@ -233,14 +244,22 @@ ArticlesScreen.navigationOptions = {
 }
 
 const mapStateToProps = (state) => ({
+  // V2.0 Storage items
+  citations: state.citations,
+  history: state.history,
+  // V1.0 Deprecated items
   references: state.references.ids,
   documents: state.references.docs,
   missing: state.references.missing,
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  pushToHistory: (uid, historyItem) => dispatch(historyAction.pushToHistory(uid, historyItem)),
-
+  // History actions
+  pushToHistory: (id, historyItem) => dispatch(historyAction.pushToHistory(id, historyItem)),
+  // Citation actions
+  addCitationItem: (id, citationItem) => dispatch(citationAction.addCitationItem(id, citationItem)),
+  deleteCitationItem: (id) => dispatch(citationAction.deleteCitationItem(id)),
+  // Deprecated actions
   addReference: ref => dispatch(referenceAction.addReference(ref)),
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),
