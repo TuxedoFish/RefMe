@@ -57,7 +57,7 @@ export const citations = (state = initialCitationsState, action = null) => {
         const { id, item } = action
 
         // Update the items 
-        let { defaultById: defaultItems, currentById, currentItems, allIds: ids } = state
+        let { defaultById: defaultItems, currentById: currentItems, allIds: ids } = state
 
         // If it is isn't a citation then do nothing - error catching
         if(!ids.includes(id)) { 

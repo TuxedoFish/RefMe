@@ -78,10 +78,9 @@ class ArticlesScreen extends React.Component {
 
   /* Check whether the current document already has or not a reference */
   isDocumentCited = () => {
-    const { citations: allIds } = this.props
+    const { citations: { allIds } } = this.props
     const { params: {id} } = this.state
-    console.log(allIds)
-    return id in allIds
+    return allIds.includes(id)
   }
 
   /*
@@ -215,8 +214,7 @@ class ArticlesScreen extends React.Component {
     const { params: {url, id, type, title },
       overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
 
-    const { references } = this.props
-    const isReferenced = references.includes(id+"")
+    const isReferenced = this.isDocumentCited()
 
     // Formatting for react-native-pdf
     const source = { uri:url, cache:true }
