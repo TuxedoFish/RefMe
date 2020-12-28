@@ -64,6 +64,31 @@ class ArticlesScreen extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    // Checks if the component is being reloaded for a new document
+    const oldId = prevProps.navigation.getParam('id', "err")
+    const newId = this.props.navigation.getParam('id', 'err')
+
+    if(oldId != newId) {
+
+      const { navigation } = this.props
+
+      const id = navigation.getParam('id', "err")
+      const url = navigation.getParam('url', "err")
+      const title = navigation.getParam('title', "Error: Title undefined")
+      const type = navigation.getParam('type', PAGE_TYPES.UNDEFINED)
+
+      this.setState({
+        params: {
+          id: id,
+          url: url,
+          title: title,
+          type: type
+        }
+      })
+    }
+  }
+
   /*
   From the history, looks for whether there is a current
   history item and if there is then fetches the last page
