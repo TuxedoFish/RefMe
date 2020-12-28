@@ -23,6 +23,7 @@ import { generateTextForCitation } from '../../utils/ReferenceUtils';
 
 // For selecting style
 import { Picker } from '@react-native-picker/picker';
+import LoadingOverlay from '../../components/LoadingOverlay';
 
 class ReferencesScreen extends React.Component {
 	
@@ -33,6 +34,10 @@ class ReferencesScreen extends React.Component {
 
     this.state = {
       citationStyle: CITATION_STYLES.HARVARD,
+      overlay: {
+        visible: false,
+        title: "None"
+      }
     }
 
     this.upgradeInputRef = React.createRef()
@@ -47,6 +52,15 @@ class ReferencesScreen extends React.Component {
       url: url,
       title: title,
       type: type
+    })
+  }
+
+  updateOverlay = (isVisible, title) => {
+    this.setState({
+      overlay: {
+        visible: isVisible,
+        title: title
+      }
     })
   }
 
@@ -77,6 +91,7 @@ class ReferencesScreen extends React.Component {
 
     // Citations are stored entirerly in Redux now
     const { citations: {currentById, allIds} } = this.props
+    const { overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
 
     return (
       <>
@@ -120,6 +135,8 @@ class ReferencesScreen extends React.Component {
             <Text>Write To Clipboard</Text>
           </Button>
         </ScrollView>
+        
+        <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
       </>
     );
   }
@@ -135,7 +152,12 @@ class ReferencesScreen extends React.Component {
       content.push(generateTextForCitation(currentById[id], i, citationStyle))
     })}
 
-	  await Clipboard.setString(content.join(', '));
+    this.updateOverlay(true, "Copying...")
+
+    await Clipboard.setString(content.join(', '));
+    
+    this.updateOverlay(true, "Copied!")
+    setTimeout( () => { this.updateOverlay(false, "None") }, 500)
 	}
 
 }

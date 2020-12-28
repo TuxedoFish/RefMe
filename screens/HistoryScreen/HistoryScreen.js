@@ -17,7 +17,7 @@ import NoDataFoundImage from "../../assets/images/no-data-found.svg";
 // Specific page stylings and constants
 import { styles_dict } from './Styles.js'
 import { compose } from 'redux';
-import { convertISOString, formatDateForHistory } from '../../utils/DateUtils';
+import { getDateFromISOString, formatDateForHistory } from '../../utils/DateUtils';
 const styles = StyleSheet.create(styles_dict)
 
 class HistoryScreen extends React.Component {
