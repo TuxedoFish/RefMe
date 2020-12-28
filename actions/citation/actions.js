@@ -3,12 +3,12 @@ import * as actionTypes from './actionTypes'
 export const addCitationItem = (id, item) => ({
 	id, 
 	item,
-	type: actionTypes.PUSH_TO_HISTORY,
+	type: actionTypes.ADD_CITATION_ITEM,
 })
 
 export const deleteCitationItem = (id) => ({
 	id,
-	type: actionTypes.DELETE_HISTORY_ITEM,
+	type: actionTypes.DELETE_CITATION_ITEM,
 })
 
 export const clearCitations = () => ({

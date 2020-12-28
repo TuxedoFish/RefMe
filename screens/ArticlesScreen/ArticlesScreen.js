@@ -55,7 +55,7 @@ class ArticlesScreen extends React.Component {
       },
       meta: {},
       currentpage: 1,
-      length: 1,
+      length: 1
     }
   }
 
@@ -67,8 +67,8 @@ class ArticlesScreen extends React.Component {
   */
   getCurrentPage = () => {
     const { params: {id} } = this.state
-    const { documents } = this.props
-    return id in documents ? documents[id].currentpage : 1
+    const { history: {byId: historyItems} } = this.props
+    return id in historyItems ? historyItems[id].currentpage : 1
   }
 
   /* Check whether the current document already has or not a reference */
@@ -86,7 +86,7 @@ class ArticlesScreen extends React.Component {
   toggleReference = () => {
 
     // TODO: Should check the isReferenced variable directly from redux
-    const { id, meta } = this.state
+    const { params: {id}, meta } = this.state
     const { deleteCitationItem, addCitationItem } = this.props
     const isReferenced = this.isDocumentCited()
 
@@ -102,6 +102,7 @@ class ArticlesScreen extends React.Component {
         },
         (error) => {
           console.log("Error: failed to generate citation")
+          console.log(error)
         })
     }
 
@@ -146,10 +147,8 @@ class ArticlesScreen extends React.Component {
     // TODO: Pass into recommendation engine API
   }
 
-  changePage = (page) => {
+  goToPage = (page) => {
     this.pdf.setPage(page) 
-    this.pushToHistory(page)
-    this.setState({ currentpage: page})
   }
 
   // When the PDF loads grab meta data and update history
@@ -158,13 +157,13 @@ class ArticlesScreen extends React.Component {
     if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
     
     this.setState({ 
-      length : numberOfPages,
+      length: numberOfPages,
       meta: extras
     })
 
-    // Fetch history and set current page
-    var page = this.getCurrentPage()
-    this.changePage(page)
+    if(this.getCurrentPage() != this.state.currentpage) {
+      this.goToPage(this.getCurrentPage())
+    }
   }
 
   // When the page has changed update the history
@@ -178,12 +177,13 @@ class ArticlesScreen extends React.Component {
   /* changePage - the down and up arrow keys on the side of the PDF viewer */
   changePage = (isNextPage) => {
 
-    const { currentPage, length } = this.state
+    const { currentpage, length } = this.state
 
-    const nextPage = currentPage + (isNextPage * 1);
+    const change = isNextPage ? 1 : -1
+    const nextPage = currentpage + change
 
-    if(nextPage < length-1 && nextPage > 0) { 
-      this.changePage(nextPage)
+    if(nextPage < length+1 && nextPage > 0) { 
+      this.goToPage(nextPage)
     }
   }
   
@@ -227,10 +227,10 @@ class ArticlesScreen extends React.Component {
           onPressLink={(uri)=>{ console.log(`Link pressed: ${uri}`) }}
           style={styles.pdf}/>
         <View style={styles.floatingButtonsContainer}>
-          <Button light style={styles.floatingButton} onPress={this.changePage(false)}>
+          <Button light style={styles.floatingButton} onPress={() => { this.changePage(false) }}>
             <Icon name='arrow-up' />
           </Button>
-          <Button light style={styles.floatingButton} onPress={this.changePage(true)} >
+          <Button light style={styles.floatingButton} onPress={() => { this.changePage(true) }}>
             <Icon name='arrow-down' />
           </Button>
         </View>

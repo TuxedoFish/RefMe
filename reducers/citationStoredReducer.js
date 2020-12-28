@@ -28,11 +28,56 @@ export const citations = (state = initialCitationsState, action = null) => {
     
       case actionTypes.ADD_CITATION_ITEM: {
         
+        // Get the params
+        const { id, item } = action
+
+        // Update the items 
+        let { defaultById: defaultItems, currentById: currentItems, allIds: ids } = state
+        
+        // If it is already a citation then do nothing - error catching
+        if(ids.includes(id)) { 
+          return state
+        }
+        
+        defaultItems[id] = item
+        currentItems[id] = item
+        ids.unshift(id)
+
+        return {
+          defaultById: defaultItems,
+          currentById: currentItems,
+          allIds: ids
+        }
       }
 
       
       case actionTypes.DELETE_CITATION_ITEM: {
         
+        // Get the params
+        const { id, item } = action
+
+        // Update the items 
+        let { defaultById: defaultItems, currentById, currentItems, allIds: ids } = state
+
+        // If it is isn't a citation then do nothing - error catching
+        if(!ids.includes(id)) { 
+          return state
+        }
+
+        // Remove from all ids
+        for( var i = 0; i < ids.length; i++){ 
+          if (ids[i] === id) { ids.splice(i, 1);}
+        }
+
+        // Delete the citation
+        delete defaultItems[id]
+        delete currentItems[id]
+
+        return {
+          defaultById: defaultItems,
+          currentById: currentItems,
+          allIds: ids
+        }
       }
 
       

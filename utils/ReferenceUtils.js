@@ -2,6 +2,7 @@
 // meta - PDF meta data
 // onSuccess(id, citation)
 
+import axios from 'axios'
 import { PAGE_TYPES } from "../screens/ArticlesScreen/Constants"
 
 // onFailed(error)
@@ -25,7 +26,7 @@ export async function generateCitation(id, meta, onSuccess, onFailed) {
     const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
     const ENDPOINT = "/oer_materials/" + id
     const url = PLATFORM_URL + ENDPOINT
-    
+
     axios.get(url, {} )
     .then(res => {
         // Get the response from x5gon
