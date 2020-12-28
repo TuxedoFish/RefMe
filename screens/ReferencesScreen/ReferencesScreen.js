@@ -18,8 +18,11 @@ import NoDataFoundImage from "../../assets/images/no-data-found.svg";
 // Specific page stylings & constants
 import { styles_dict } from './Styles.js'
 const styles = StyleSheet.create(styles_dict)
-import { CITATION_STYLES } from './Constants';
+import { CITATION_STYLES, LABELS_TO_VALUES } from './Constants';
 import { generateTextForCitation } from '../../utils/ReferenceUtils';
+
+// For selecting style
+import { Picker } from '@react-native-picker/picker';
 
 class ReferencesScreen extends React.Component {
 	
@@ -29,7 +32,7 @@ class ReferencesScreen extends React.Component {
     this.DEBUGGING = false
 
     this.state = {
-      citationStyle: CITATION_STYLES.UNDEFINED,
+      citationStyle: CITATION_STYLES.HARVARD,
     }
 
     this.upgradeInputRef = React.createRef()
@@ -86,6 +89,17 @@ class ReferencesScreen extends React.Component {
             <Text style={styles.mainHeaderText}>
               References
             </Text>
+
+            <Picker
+              selectedValue={this.state.citationStyle}
+              style={{height: 50, width: 130}}
+              onValueChange={(itemValue, itemIndex) =>
+                this.setState({citationStyle: itemValue})
+              }>
+                {LABELS_TO_VALUES.map((item) => (
+                  <Picker.Item label={item.label} value={item.value} />
+                ))}
+            </Picker>
 
             {allIds.length > 0 ? (
               <View style={styles.itemsView}>
