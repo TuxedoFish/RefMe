@@ -1,0 +1,1 @@
+export const AMEND_SETTING = "AMEND_SETTING"

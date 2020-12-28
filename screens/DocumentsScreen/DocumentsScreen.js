@@ -7,11 +7,17 @@ import { Container, Header, Content, Card, CardItem,
 import moment from 'moment';
 
 import { connect } from 'react-redux';
-import * as referenceAction from '../actions/referenceAction';
+import * as referenceAction from '../../actions/referenceAction';
 
 import { Toolbar } from 'react-native-material-ui';
 
-import NetworkErrorImage from "../assets/images/network-error-image.svg";
+import NetworkErrorImage from "../../assets/images/network-error-image.svg";
+import { PAGE_TYPES } from '../ArticlesScreen/Constants';
+
+// Styles and constants specific to page
+import { styles_dict } from './Styles.js'
+import LoadingOverlay from '../../components/LoadingOverlay';
+const styles = StyleSheet.create(styles_dict)
 
 class DocumentsScreen extends React.Component {
 	
@@ -21,16 +27,18 @@ class DocumentsScreen extends React.Component {
     this.DEBUGGING = false
 
   	this.getArticles = this.getArticles.bind(this)
-  	this.openDocument = this.openDocument.bind(this)
     this.search = this.search.bind(this)
     this.checkArticlesAreSafe = this.checkArticlesAreSafe.bind(this)
   	
   	this.state = {
-      hasLoaded: false,
       articles: [],
       nextPage: 1,
       keyword: "machine learning",
       stillArticles: true,
+      overlay: {
+        visible: true,
+        title: "Loading..."
+      },
       colors: [
         "#e056fd",
         "#ffbe76",
@@ -47,7 +55,9 @@ class DocumentsScreen extends React.Component {
   	const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
   	const ENDPOINT = "/recommend/oer_materials"
   	const url = PLATFORM_URL + ENDPOINT
-  	
+    
+    this.updateOverlay(true, `Loading...`)
+
     if(this.DEBUGGING) { console.log(keyword) }
 
   	axios.get(url, {
@@ -72,12 +82,14 @@ class DocumentsScreen extends React.Component {
       console.log(nextPage + " / " + maxPages)
 
 			this.setState({
-				articles: articles,
-        hasLoaded: true,
+        articles: articles,
         hasRequestFailed: false,
         nextPage: nextPage,
         stillArticles: nextPage < maxPages 
-			})
+      })
+      
+      this.updateOverlay(true, "Finished!")
+      setTimeout( () => { this.updateOverlay(false, "None") }, 500)
 
       this.checkArticlesAreSafe()
 		})
@@ -87,8 +99,18 @@ class DocumentsScreen extends React.Component {
         hasLoaded: false,
         hasRequestFailed: true
       })
+      this.updateOverlay(false, "None")
 			console.log(error);
 		})
+  }
+
+  updateOverlay = (isVisible, title) => {
+    this.setState({
+      overlay: {
+        visible: isVisible,
+        title: title
+      }
+    })
   }
 
   checkArticlesAreSafe() {
@@ -125,12 +147,21 @@ class DocumentsScreen extends React.Component {
     }
   }
 
-  openDocument(material_id) {
+  openDocument = (material_id, url, type, title) => {
     console.log("Running...")
     const { articles  } = this.state
     
+    // Pass in parameters to the page:
+    // id: the id of the page
+    // url: the url to the content
+    // type: type of content
+    // title: title of the content
   	this.props.navigation.navigate('Articles', {
-  		material_id: material_id,
+      material_id: material_id,
+      id: material_id,
+      url: url,
+      type: type,
+      title: title,
   	})
   }
 
@@ -146,7 +177,8 @@ class DocumentsScreen extends React.Component {
 
   render() {
 
-  	const { articles, hasLoaded, stillArticles, colors, hasRequestFailed } = this.state
+    const { articles, hasLoaded, stillArticles, colors, hasRequestFailed,
+      overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
 
     if(this.DEBUGGING) { console.log("DocumentsScreen.render: has it loaded? " + hasLoaded) }
 
@@ -192,26 +224,16 @@ class DocumentsScreen extends React.Component {
           </ScrollView>
         ) : null}
         {/* When the data hasn't loaded AND no error occurrs */}
-        {(!hasLoaded && !hasRequestFailed) ? (
+        {!hasRequestFailed ? (
           <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.centerContainer}>
-              <Button
-                  style={styles.button}
-                  onPress={ () => {} }
-                >
-                <Text>Loading...</Text>
-              </Button>   
-            </View>
-          </ScrollView>
-        ) : null}
-        {/* When the data has loaded */}
-        {hasLoaded ? (
-          <ScrollView contentContainerStyle={styles.container}>
-            <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
-              <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
-                {articles.length + " results for " + this.state.keyword + ":"}
-              </Text>
-            </View>
+            
+            { !isOverlayVisible ? (
+              <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
+                <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
+                  {articles.length + " results for " + this.state.keyword + ":"}
+                </Text>
+              </View>
+            ) : null }
 
         		{ articles.map((article, i) => {
               var author = article.provider
@@ -223,7 +245,15 @@ class DocumentsScreen extends React.Component {
               const color = colors[i%5]
 
         		  return ( 
-                <TouchableOpacity onPress={ () => {this.openDocument(article.material_id)} } 
+                <TouchableOpacity 
+                  onPress={ () => {
+                    this.openDocument(
+                      article.material_id,
+                      article.url,
+                      PAGE_TYPES.PDF,
+                      article.title
+                    )
+                  }} 
                   style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
                   <Card style={{...styles.card, backgroundColor: color}}>
                 		<CardItem style={{...styles.header, backgroundColor: color}}>
@@ -240,7 +270,7 @@ class DocumentsScreen extends React.Component {
                 </TouchableOpacity>
               );
             })}
-            {stillArticles ? (
+            {stillArticles && !isOverlayVisible ? (
               <Button
                 style={styles.button}
                 onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
@@ -250,6 +280,8 @@ class DocumentsScreen extends React.Component {
             ) : null}
           </ScrollView>
         ) : null}
+
+        <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
       </>
     )
   }
@@ -263,86 +295,6 @@ DocumentsScreen.navigationOptions = {
     <TabBarIcon focused={focused} name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'} />
   ),
 };
-
-/* Colors */
-const transparent = "#00000000" // For hidden borders
-// Dark mode
-// const backgroundColor = "#121212" // For the background
-// const elevatedColor = "#323232" // For the cards
-// const cardOutline = "#00000000" // For hidden borders
-const pTextColor = "#EEEEEE"
-const h1TextColor = "#FFFFFF"
-// const h5TextColor = "#a1a1a1"
-
-// Light mode
-const backgroundColor = "#F5F5F6" // For the background
-const elevatedColor = "#FFFFFF" // For the cards
-const cardOutline = "#00000000" // For hidden borders
-// const pTextColor = "#666666"
-// const h1TextColor = "#0068aa"
-const h5TextColor = "#000000"
-const cardColor = "#2196f3"
-
-/* Font Sizes */
-const pTextSize = 12
-const h5TextSize = 16
-const h1TextSize = 21
-
-/* Miscellanous */
-const borderRadius = 8;
-
-// borders - 2
-// header font size: 24
-// p font size: 12
-// backgound color - 
-const styles = StyleSheet.create({
-  footer: {
-    borderRadius: borderRadius,
-    backgroundColor: elevatedColor,
-    borderColor: transparent
-  },
-  card: {
-    borderRadius: borderRadius,
-    backgroundColor: elevatedColor,
-    borderColor: cardOutline
-  },
-  header: {
-    borderRadius: borderRadius,
-    backgroundColor: elevatedColor,
-    borderColor: transparent
-  },
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    justifyContent: 'space-between',
-    backgroundColor: backgroundColor,
-  },
-  centerContainer: {
-    flex: 1,
-    backgroundColor: backgroundColor,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  baseText: {
-    color: pTextColor,
-    fontSize: pTextSize
-  },
-  header5Text: {
-    color: h5TextColor,
-    fontSize: h1TextSize,
-    paddingBottom: 10,
-    fontWeight: 'bold'
-  },
-  header1Text: {
-    color: h1TextColor,
-    fontSize: h1TextSize,
-    fontWeight: "bold"
-  },
-  button: {
-    backgroundColor: cardColor,
-    borderRadius: borderRadius
-  }
-});
 
 const mapStateToProps = (state, ownProps) => {
   return {

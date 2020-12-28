@@ -1,9 +1,20 @@
 import { combineReducers } from 'redux';
-import references from './referenceReducer';
+// V2.0 Updated reducers
+import { history, initialHistoryState } from './historyStoredReducer';
+import { citations, initialCitationsState } from './citationStoredReducer';
+
+// V1.0 Deprecated 
+import { references, initialReferencesState } from './referenceReducer';
 
 // Redux: Root Reducer
-const rootReducer = combineReducers({
-    references: references
+export const rootReducer = combineReducers({
+    references: references,
+    history: history,
+    citations: citations
 });
-// Exports
-export default rootReducer;
+
+export const initialState = {
+    references: initialReferencesState,
+    history: initialHistoryState,
+    citations: initialCitationsState
+}
