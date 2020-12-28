@@ -77,3 +77,23 @@ export function generateTextForCitation(citation, index, style) {
     return (index+1) + ": " + author + ", " + initials + ", " + title + ", " + publisher + ", " + 
     getDateFromISOString(accessed_date) + ". Available from: " + url
 }
+
+export function generateAPACitation(citation, index, style) {
+
+}
+
+export function generateMLACitation(citation, index, style) {
+
+}
+
+export function generateChicagoCitation(citation, index, style) {
+
+}
+
+export function generateHarvardCitation(citation, index, style) {
+
+}
+
+export function generateIEEECitation(citation, index, style) {
+    
+}

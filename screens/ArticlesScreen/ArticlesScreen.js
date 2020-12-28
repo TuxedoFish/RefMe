@@ -33,27 +33,15 @@ class ArticlesScreen extends React.Component {
     // TODO: Define this in redux
     this.DEBUGGING = false
 
-    // Set the title bar to loading until pdf is loaded in
-    this.props.navigation.setParams({ title: "Loading..."})
     // Get the details about the article navigating to
-    // const id = this.props.navigation.getParam('material_id', {})
-    const { navigation } = this.props
-    const id = navigation.getParam('id', "err")
-    const url = navigation.getParam('url', "err")
-    const title = navigation.getParam('title', "Error: Title undefined")
-    const type = navigation.getParam('type', PAGE_TYPES.UNDEFINED)
+    const params = this.getPassedInParams()
 
     // Assign the top navigation bar the title of the article
-    navigation.setParams({ article_title: title })
+    navigation.setParams({ article_title: params.title })
 
     // Initial state defining the class
     this.state = {
-      params: {
-        id: id,
-        url: url,
-        title: title,
-        type: type
-      },
+      params: params,
       overlay: {
         visible: false,
         title: "Err"
@@ -64,28 +52,28 @@ class ArticlesScreen extends React.Component {
     }
   }
 
+  /* Gets the parameters passed into the screen when navigated to */
+  getPassedInParams = () => {
+    const { navigation } = this.props
+    return {
+      id: navigation.getParam('id', "err"),
+      url: navigation.getParam('url', "err"),
+      title: navigation.getParam('title', "Error: Title undefined"),
+      type: navigation.getParam('type', PAGE_TYPES.UNDEFINED),
+    }
+  }
+
+  /* For when the screen is opened to display a different doc */
   componentDidUpdate(prevProps, prevState) {
     // Checks if the component is being reloaded for a new document
     const oldId = prevProps.navigation.getParam('id', "err")
     const newId = this.props.navigation.getParam('id', 'err')
 
-    if(oldId != newId) {
-
-      const { navigation } = this.props
-
-      const id = navigation.getParam('id', "err")
-      const url = navigation.getParam('url', "err")
-      const title = navigation.getParam('title', "Error: Title undefined")
-      const type = navigation.getParam('type', PAGE_TYPES.UNDEFINED)
-
-      this.setState({
-        params: {
-          id: id,
-          url: url,
-          title: title,
-          type: type
-        }
-      })
+    // If it is then update the state
+    if(oldId != newId) { 
+      const params = this.getPassedInParams()
+      this.setState({ params: params }) 
+      navigation.setParams({ article_title: params.title })
     }
   }
 

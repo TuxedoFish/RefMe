@@ -16,6 +16,7 @@ import { PAGE_TYPES } from '../ArticlesScreen/Constants';
 
 // Styles and constants specific to page
 import { styles_dict } from './Styles.js'
+import LoadingOverlay from '../../components/LoadingOverlay';
 const styles = StyleSheet.create(styles_dict)
 
 class DocumentsScreen extends React.Component {
@@ -30,11 +31,14 @@ class DocumentsScreen extends React.Component {
     this.checkArticlesAreSafe = this.checkArticlesAreSafe.bind(this)
   	
   	this.state = {
-      hasLoaded: false,
       articles: [],
       nextPage: 1,
       keyword: "machine learning",
       stillArticles: true,
+      overlay: {
+        visible: true,
+        title: "Loading..."
+      },
       colors: [
         "#e056fd",
         "#ffbe76",
@@ -51,7 +55,9 @@ class DocumentsScreen extends React.Component {
   	const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
   	const ENDPOINT = "/recommend/oer_materials"
   	const url = PLATFORM_URL + ENDPOINT
-  	
+    
+    this.updateOverlay(true, `Loading...`)
+
     if(this.DEBUGGING) { console.log(keyword) }
 
   	axios.get(url, {
@@ -76,12 +82,14 @@ class DocumentsScreen extends React.Component {
       console.log(nextPage + " / " + maxPages)
 
 			this.setState({
-				articles: articles,
-        hasLoaded: true,
+        articles: articles,
         hasRequestFailed: false,
         nextPage: nextPage,
         stillArticles: nextPage < maxPages 
-			})
+      })
+      
+      this.updateOverlay(true, "Finished!")
+      setTimeout( () => { this.updateOverlay(false, "None") }, 500)
 
       this.checkArticlesAreSafe()
 		})
@@ -91,8 +99,18 @@ class DocumentsScreen extends React.Component {
         hasLoaded: false,
         hasRequestFailed: true
       })
+      this.updateOverlay(false, "None")
 			console.log(error);
 		})
+  }
+
+  updateOverlay = (isVisible, title) => {
+    this.setState({
+      overlay: {
+        visible: isVisible,
+        title: title
+      }
+    })
   }
 
   checkArticlesAreSafe() {
@@ -159,7 +177,8 @@ class DocumentsScreen extends React.Component {
 
   render() {
 
-  	const { articles, hasLoaded, stillArticles, colors, hasRequestFailed } = this.state
+    const { articles, hasLoaded, stillArticles, colors, hasRequestFailed,
+      overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
 
     if(this.DEBUGGING) { console.log("DocumentsScreen.render: has it loaded? " + hasLoaded) }
 
@@ -205,26 +224,16 @@ class DocumentsScreen extends React.Component {
           </ScrollView>
         ) : null}
         {/* When the data hasn't loaded AND no error occurrs */}
-        {(!hasLoaded && !hasRequestFailed) ? (
+        {!hasRequestFailed ? (
           <ScrollView contentContainerStyle={styles.container}>
-            <View style={styles.centerContainer}>
-              <Button
-                  style={styles.button}
-                  onPress={ () => {} }
-                >
-                <Text>Loading...</Text>
-              </Button>   
-            </View>
-          </ScrollView>
-        ) : null}
-        {/* When the data has loaded */}
-        {hasLoaded ? (
-          <ScrollView contentContainerStyle={styles.container}>
-            <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
-              <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
-                {articles.length + " results for " + this.state.keyword + ":"}
-              </Text>
-            </View>
+            
+            { !isOverlayVisible ? (
+              <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
+                <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
+                  {articles.length + " results for " + this.state.keyword + ":"}
+                </Text>
+              </View>
+            ) : null }
 
         		{ articles.map((article, i) => {
               var author = article.provider
@@ -261,7 +270,7 @@ class DocumentsScreen extends React.Component {
                 </TouchableOpacity>
               );
             })}
-            {stillArticles ? (
+            {stillArticles && !isOverlayVisible ? (
               <Button
                 style={styles.button}
                 onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
@@ -271,6 +280,8 @@ class DocumentsScreen extends React.Component {
             ) : null}
           </ScrollView>
         ) : null}
+
+        <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
       </>
     )
   }
