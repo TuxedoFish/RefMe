@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 
@@ -12,15 +11,21 @@ import { store, persistor } from './store';
 
 import AppContainer from './navigation/AppNavigator';
 
-export default function App() {
+export default class App extends React.Component {
   
-  return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <AppContainer />
-      </PersistGate>
-    </Provider>
-  );
+  constructor() {
+    super()
+  }
+
+  render() {
+    return (
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+          <AppContainer />
+        </PersistGate>
+      </Provider>
+    );
+  }
 
 }
