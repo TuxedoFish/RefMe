@@ -5,7 +5,9 @@ export const CITATION_STYLES = {
     CHICAGO: 2,
     HARVARD: 3,
     IEEE: 4,
-    VANCOUVER: 5
+    VANCOUVER: 5,
+    NATURE: 6,
+    RSC: 7
 }
 
 export const LABELS_TO_VALUES = [
@@ -32,5 +34,13 @@ export const LABELS_TO_VALUES = [
     {
         label: "Vancouver",
         value: CITATION_STYLES.VANCOUVER
+    }, 
+    {
+        label: "Nature",
+        value: CITATION_STYLES.NATURE
+    },
+    {
+        label: "RSC",
+        value: CITATION_STYLES.RSC
     }
 ]

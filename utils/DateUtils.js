@@ -26,6 +26,13 @@ export function formatDateForMLAReference(date) {
   return formatted_date
 }
 
+// April 2019 (example)
+export function formatDateForRSCReference(date) {
+  const months = ["January", "February", "March","April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let formatted_date = months[date.getMonth()] + " " + date.getFullYear()
+  return formatted_date
+}
+
 export function getDateFromISOString(ISOString) {
   return new Date(Date.parse(ISOString))
 }

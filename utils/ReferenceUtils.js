@@ -6,7 +6,8 @@ import axios from 'axios'
 import { PAGE_TYPES } from "../screens/ArticlesScreen/Constants"
 import { CITATION_STYLES } from '../screens/ReferencesScreen/Constants'
 import { formatDateForReference, formatDateForHarvardReference, 
-    getDateFromISOString, getDateFromX5gonString, formatDateForMLAReference } from './DateUtils'
+    getDateFromISOString, getDateFromX5gonString, 
+    formatDateForMLAReference, formatDateForRSCReference } from './DateUtils'
 
 // onFailed(error)
 export async function generateCitation(id, meta, onSuccess, onFailed) {
@@ -92,9 +93,18 @@ export function generateTextForCitation(citation, index, style) {
         case CITATION_STYLES.VANCOUVER: {
             return generateVancouverCitation(citation, index)
         }
+
+        case CITATION_STYLES.NATURE: {
+            return generateNatureCitation(citation, index)
+        }
+
+        case CITATION_STYLES.RSC: {
+            return generateRSCCitation(citation, index)
+        }
         
         default: {
-            return generateDefaultCitation(citation, index)
+            // Return APA style as the default
+            return generateAPACitation(citation, index)
         }
     }
 }
@@ -218,19 +228,40 @@ export function generateVancouverCitation(citation, index) {
     return `${index+1}. ${last_name}, ${first_initial}. ${title} [Internet]. ${publisher}. ${published_year} [cited ${published_date_formatted}]. Available from: ${url}`
 }
 
-export function generateDefaultCitation(citation, index) {
-    
+/*
+1.
+Author1 LastnameA. F. & Author2 LastnameA. F. Title. https://www.example.com (2000).
+*/
+export function generateNatureCitation(citation, index) {
+
     // Destructure elements from citation 
     const { author, accessed_date, published_date, publisher, url, title} = citation
 
-    // Author initials
-    var initials = author.match(/\b\w/g) || [];
-    initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
-
-    // Formatting of dates
-    const accessed_date_formatted = formatDateForReference(getDateFromISOString(accessed_date))
+    // Formatting of data for formatting style
+    const published_date_year = getDateFromX5gonString(published_date).getFullYear()
+    
+    // Tenuous TODO: Make this better
+    const names = author.split(' ')
+    const last_name = names[names.length - 1]
+    const first_initial = names[0].substring(0, 1).toUpperCase()
 
     // Return the raw text style of the citation
-    return (index+1) + ": " + author + ", " + initials + ", " + title + ", " + publisher + ", " + 
-    accessed_date_formatted + ". Available from: " + url
+    return `${index+1}. ${last_name}, ${first_initial}. ${title}. ${url} (${published_date_year})`
+}
+
+/*
+Online resources should be citied in the form: Name of resource, URL, (accessed date). Please note
+the most important information to include is the URL and the date accessed.
+ The Merck Index Online, http://www.rsc.org/Merck-Index/monograph/mono1500000841, (accessed
+October 2013).
+*/
+export function generateRSCCitation(citation, index) {
+    // Destructure elements from citation 
+    const { author, accessed_date, published_date, publisher, url, title} = citation
+
+    // Formatting of data for formatting style
+    const accessed_date_formatted = formatDateForRSCReference(getDateFromISOString(accessed_date))
+
+    // Return the raw text style of the citation
+    return `${title}, ${url}, (accessed ${accessed_date_formatted}).`
 }
