@@ -51,7 +51,7 @@ export const history = (state = initialHistoryState, action = null) => {
 
       
       case actionTypes.CLEAR_HISTORY: {
-        
+        return initialHistoryState
       }
 
       default:

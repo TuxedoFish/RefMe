@@ -14,6 +14,8 @@ export const styles_dict = {
         borderRadius: 8
     },
     text: {
-        color: '#FFF'
+        color: '#FFF',
+        textAlign: 'center',
+        paddingBottom: 20
     }
 }

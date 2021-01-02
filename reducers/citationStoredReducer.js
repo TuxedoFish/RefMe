@@ -1,4 +1,5 @@
 import * as actionTypes from '../actions/citation/actionTypes';
+import { initialReferencesState } from './referenceReducer';
 
 // V 1.0 schema (uid is using x5gon id):
 // (default/current)ById: [
@@ -82,7 +83,7 @@ export const citations = (state = initialCitationsState, action = null) => {
 
       
       case actionTypes.CLEAR_CITATIONS: {
-        
+        return initialCitationsState
       }
 
       default:

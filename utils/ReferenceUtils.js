@@ -7,7 +7,8 @@ import { PAGE_TYPES } from "../screens/ArticlesScreen/Constants"
 import { CITATION_STYLES } from '../screens/ReferencesScreen/Constants'
 import { formatDateForReference, formatDateForHarvardReference, 
     getDateFromISOString, getDateFromX5gonString, 
-    formatDateForMLAReference, formatDateForRSCReference } from './DateUtils'
+    formatDateForMLAReference, formatDateForRSCReference, 
+    convertISOtoX5gon} from './DateUtils'
 
 // onFailed(error)
 export async function generateCitation(id, meta, onSuccess, onFailed) {
@@ -38,7 +39,7 @@ export async function generateCitation(id, meta, onSuccess, onFailed) {
         // Generate accessed date
         const accessed_date = new Date().toISOString();
         // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
-        const published_date = meta.modDate
+        const published_date = meta.modDate ? meta.modDate : convertISOtoX5gon(article.creation_date)
         // Get the author from PDF metadata
         const author = meta.author==="" ? "Unknown" : meta.author
         // Publisher
@@ -67,6 +68,41 @@ export async function generateCitation(id, meta, onSuccess, onFailed) {
     })
 }
 
+export async function generateHistoryItem(id, oldItem, onSuccess, onFailed) {
+
+    // Setup to make a query for the document
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+    const ENDPOINT = "/oer_materials/" + id
+    const url = PLATFORM_URL + ENDPOINT
+
+    axios.get(url, {} )
+    .then(res => {
+        // Get the response from x5gon
+        const article = res.data.oer_materials
+        // Generate accessed date
+        const lastmodified = new Date().toISOString();
+        // Link
+        const url = article.url
+        // Title of paper
+        const title = article.title
+
+        // Put it all together:
+        const historyItem = {
+            id: id,
+            currentpage: oldItem.currentpage,
+            length : oldItem.length,
+            lastmodified: lastmodified,
+            title: title,
+            url: url,
+            type: PAGE_TYPES.PDF
+        }
+        // Callback function
+        onSuccess(id, historyItem)
+    })
+    .catch(error => {
+      onFailed(error)
+    })
+}
 
 export function generateTextForCitation(citation, index, style) {
     switch(style) {
