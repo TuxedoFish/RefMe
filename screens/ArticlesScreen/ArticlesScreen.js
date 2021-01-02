@@ -37,6 +37,7 @@ class ArticlesScreen extends React.Component {
     const params = this.getPassedInParams()
 
     // Assign the top navigation bar the title of the article
+    const { navigation } = this.props
     navigation.setParams({ article_title: params.title })
 
     // Initial state defining the class

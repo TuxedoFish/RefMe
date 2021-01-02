@@ -17,7 +17,7 @@ import NoDataFoundImage from "../../assets/images/no-data-found.svg";
 // Specific page stylings and constants
 import { styles_dict } from './Styles.js'
 import { compose } from 'redux';
-import { convertISOString } from '../../utils/DateUtils';
+import { getDateFromISOString, formatDateForHistory } from '../../utils/DateUtils';
 const styles = StyleSheet.create(styles_dict)
 
 class HistoryScreen extends React.Component {
@@ -43,7 +43,7 @@ class HistoryScreen extends React.Component {
   historyItem = (item, index) => {
 
     const TITLE_LENGTH = 40;
-    const formatted_date = convertISOString(item.lastmodified)
+    const formatted_date = formatDateForHistory(getDateFromISOString(item.lastmodified))
 
     return (
       <TouchableOpacity onPress={ () => {this.openDocument(item)} } 
