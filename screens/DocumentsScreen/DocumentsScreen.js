@@ -28,7 +28,6 @@ class DocumentsScreen extends React.Component {
 
   	this.getArticles = this.getArticles.bind(this)
     this.search = this.search.bind(this)
-    this.checkArticlesAreSafe = this.checkArticlesAreSafe.bind(this)
   	
   	this.state = {
       articles: [],
@@ -52,47 +51,36 @@ class DocumentsScreen extends React.Component {
   }
 
   getArticles(keyword, page, reset=false) {
-  	const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
-  	const ENDPOINT = "/recommend/oer_materials"
-  	const url = PLATFORM_URL + ENDPOINT
-    
-    this.updateOverlay(true, `Loading...`)
 
-    if(this.DEBUGGING) { console.log(keyword) }
+    this.updateOverlay(true, "Loading...")
 
-  	axios.get(url, {
+    // Using my API hosted on AWS
+    // http://refme-env.eba-dp8b9qmx.eu-west-2.elasticbeanstalk.com/articles/?query_string=Machine%20Learning&page=1
+    const URL = "http://refme-env.eba-dp8b9qmx.eu-west-2.elasticbeanstalk.com/articles/"
+    axios.get(URL, {
       params: {
-        text: keyword,
-        type: "text",
+        query_string: keyword,
         page: page,
       }
     })
-		.then(res => {
-      var articles = this.state.articles
-      res.data.rec_materials.map( (article) => {
-        console.log("next")
-        articles.push(article)
-      })
+    .then(response => {
 
-      if(reset) { articles = res.data.rec_materials }
+      const { data: { result }} = response
+      let { articles, nextPage } = this.state
 
-      const nextPage = this.state.nextPage+1
-      const maxPages = res.data.metadata.max_pages
+      if(reset) { articles = [] }
+      result.map( (article) => { articles.push(article) })
 
-      console.log(nextPage + " / " + maxPages)
+      nextPage = nextPage + 1
 
 			this.setState({
         articles: articles,
         hasRequestFailed: false,
         nextPage: nextPage,
-        stillArticles: nextPage < maxPages 
+        stillArticles: true
       })
-      
-      this.updateOverlay(true, "Finished!")
-      setTimeout( () => { this.updateOverlay(false, "None") }, 500)
-
-      this.checkArticlesAreSafe()
-		})
+      this.updateOverlay(false, "None")
+    })
 		.catch(error => {
       // Unable to load the data (probably a network error)
       this.setState({
@@ -102,6 +90,9 @@ class DocumentsScreen extends React.Component {
       this.updateOverlay(false, "None")
 			console.log(error);
 		})
+
+    // Initial V1-2 used exclusively x5gon API:
+    // https://platform.x5gon.org/api/v1/recommend/oer_materials/?text=Machin%20Learning&type=text&page=1
   }
 
   updateOverlay = (isVisible, title) => {
@@ -113,41 +104,7 @@ class DocumentsScreen extends React.Component {
     })
   }
 
-  checkArticlesAreSafe() {
-    const { articles } = this.state
-
-    for(var i=0; i<articles.length; i++) {
-      const id = articles[i].material_id
-      const missingArticle = { ...articles[i] }
-
-      const providerName = articles[i].provider
-      missingArticle['provider'] = {
-        provider_id: -1,
-        provider_name: providerName,
-        provider_domain: "unknown",
-      }
-
-      console.log("Checking article: " + id)
-
-      const PLATFORM_URL = "http://platform.x5gon.org/api/v1"
-      const ENDPOINT = "/oer_materials/" + id
-      const url = PLATFORM_URL + ENDPOINT
-
-      axios.get(url, {} )
-        .then(res => {
-          const article = res.data.oer_materials
-          
-          if(typeof article === "undefined") {
-            this.props.uploadMissingDocument(id, missingArticle)
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        })
-    }
-  }
-
-  openDocument = (material_id, url, type, title) => {
+  openDocument = (id, url, type, title) => {
     console.log("Running...")
     const { articles  } = this.state
     
@@ -157,8 +114,8 @@ class DocumentsScreen extends React.Component {
     // type: type of content
     // title: title of the content
   	this.props.navigation.navigate('Articles', {
-      material_id: material_id,
-      id: material_id,
+      material_id: id,
+      id: id,
       url: url,
       type: type,
       title: title,
@@ -236,11 +193,7 @@ class DocumentsScreen extends React.Component {
             ) : null }
 
         		{ articles.map((article, i) => {
-              var author = article.provider
-
-              if(typeof author === "object") {
-                author = article.provider.provider_name
-              }
+              var author = article.author
 
               const color = colors[i%5]
 
@@ -248,7 +201,7 @@ class DocumentsScreen extends React.Component {
                 <TouchableOpacity 
                   onPress={ () => {
                     this.openDocument(
-                      article.material_id,
+                      article.id,
                       article.url,
                       PAGE_TYPES.PDF,
                       article.title
