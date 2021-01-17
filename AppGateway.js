@@ -82,7 +82,7 @@ class AppGateway extends React.Component {
 
     // First we want to migrate the citations  
     const { loading: {total, loaded, citations, history}} = this.state
-    const { references, documents } = this.props
+    const { references, documents, resetState } = this.props
 
     // If the amount loaded is less then the number of citations
     if(loaded < citations-1) {
@@ -103,6 +103,7 @@ class AppGateway extends React.Component {
         }, this.historyItemReceived, this.historyItemFailed)
     } else {
         // Finished migration
+        resetState()
         this.updateOverlay(false, 'None')
         return
     }
@@ -205,6 +206,7 @@ const mapDispatchToProps = (dispatch) => ({
   removeReference: ref => dispatch(referenceAction.removeReference(ref)),
   updateDocument: (id, doc) => dispatch(referenceAction.updateDocument(id, doc)),
   addReferenceMeta: (id, meta) => dispatch(referenceAction.addReferenceMeta(id, meta)),
+  resetState: () => dispatch(referenceAction.resetState()),
 })
 
 export default connect(

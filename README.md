@@ -45,7 +45,11 @@ Notes: Requires internet accesss
 
 ```./gradlew assembleRelease```
 
-5. Navigate to android/app/build/outputs/app/app-release.apk
+5. Navigate to android/app/build/outputs/apk/release/app-release.apk
+
+6. run this command to test
+
+```adb install app-release.apk```
 
 # Notes on react-native-pdf
 

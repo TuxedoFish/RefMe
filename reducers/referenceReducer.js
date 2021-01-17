@@ -97,6 +97,10 @@ export const references = (state = initialReferencesState, action = null) => {
         }
       }
 
+      case actionTypes.RESET_STATE: {
+        return initialReferencesState
+      }
+
       default:
         return state;
     }
