@@ -74,6 +74,7 @@ class AppGateway extends React.Component {
 
         generateCitation(citationIndex, {author: ''}, this.citationReceived, this.citationFailed)
     } else {
+        this.runDebugScripts()
         setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
     }
   }
@@ -132,6 +133,15 @@ class AppGateway extends React.Component {
 
     // Generate the next item
     this.nextMigration()
+  }
+
+  runDebugScripts = () => { 
+    const { clearCitations, clearHistory } = this.props
+    const SHOULD_CLEAR = true
+    if(SHOULD_CLEAR) { 
+      clearHistory()
+      clearCitations()
+    }
   }
 
   citationFailed = (error) => {

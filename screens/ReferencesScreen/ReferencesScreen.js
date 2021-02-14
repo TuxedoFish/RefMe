@@ -44,14 +44,9 @@ class ReferencesScreen extends React.Component {
   }
 
   openDocument(item) {
-    
-    const { id, url, title, type } = item
-    
     this.props.navigation.navigate('Articles', {
-      id: id,
-      url: url,
-      title: title,
-      type: type
+      article: item,
+      type: item.type
     })
   }
 

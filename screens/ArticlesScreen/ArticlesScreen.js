@@ -145,7 +145,7 @@ class ArticlesScreen extends React.Component {
     // currentpage - The page that the user currently has open
     // lastpage - The length of the PDF
     const { 
-      params: {id, url, title, type}, 
+      params,
       length
     } = this.state
     // lastModified - The timestamp of when the history was updated (as a string)
@@ -155,15 +155,12 @@ class ArticlesScreen extends React.Component {
     // Push to the redux function
     const { pushToHistory: dispatchPushToHistory } = this.props
     dispatchPushToHistory(
-      id,
+      params.id,
       {
-        id: id,
         currentpage: page,
         length : length,
         lastmodified: lastmodified,
-        title: title,
-        url: url,
-        type: type
+        ...params
       }
     )
 
