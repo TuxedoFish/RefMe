@@ -20,6 +20,9 @@ import { compose } from 'redux';
 import { getDateFromISOString, formatDateForHistory } from '../../utils/DateUtils';
 const styles = StyleSheet.create(styles_dict)
 
+// Helper for object comparisons
+import _ from 'lodash'
+
 class HistoryScreen extends React.Component {
 	
   constructor(props) {
@@ -30,8 +33,13 @@ class HistoryScreen extends React.Component {
 
   openDocument(item) {
     
+    const article = {...item}
+    delete article.lastmodified
+    delete article.length
+    delete article.currentpage
+
     this.props.navigation.navigate('Articles', {
-      article: item,
+      article: article,
       type: item.type
     })
   }

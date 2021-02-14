@@ -20,7 +20,6 @@ import Pdf from 'react-native-pdf';
 import { PAGE_TYPES } from './Constants';
 import { styles_dict } from './Styles.js'
 const styles = StyleSheet.create(styles_dict)
-import { generateCitation } from '../../utils/ReferenceUtils';
 
 // Helper for object comparisons
 import _ from 'lodash'
@@ -151,18 +150,16 @@ class ArticlesScreen extends React.Component {
     // lastModified - The timestamp of when the history was updated (as a string)
     // Converted back via parseISO
     const lastmodified = new Date().toISOString();
+    const history = {
+      ...params,
+      currentpage: page,
+      length: length,
+      lastmodified: lastmodified
+    }
 
     // Push to the redux function
     const { pushToHistory: dispatchPushToHistory } = this.props
-    dispatchPushToHistory(
-      params.id,
-      {
-        currentpage: page,
-        length : length,
-        lastmodified: lastmodified,
-        ...params
-      }
-    )
+    dispatchPushToHistory(params.id, history)
 
     // TODO: Pass into recommendation engine API
   }
@@ -179,6 +176,8 @@ class ArticlesScreen extends React.Component {
     this.setState({ 
       length: numberOfPages
     })
+
+    console.log(`Current page: ${this.getCurrentPage()}`)
 
     if(this.getCurrentPage() != this.state.currentpage) {
       this.goToPage(this.getCurrentPage())

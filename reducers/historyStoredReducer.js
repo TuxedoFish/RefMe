@@ -36,7 +36,8 @@ export const history = (state = initialHistoryState, action = null) => {
         }
         ids.unshift(id)
 
-        console.log(id in ids)
+        console.log(id)
+        console.log(item.currentpage)
 
         return {
           byId: items,
