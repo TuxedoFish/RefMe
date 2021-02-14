@@ -175,7 +175,7 @@ class ArticlesScreen extends React.Component {
   }
 
   // When the PDF loads grab meta data and update history
-  onPdfLoaded = (numberOfPages, filePath, extras, toc) => {
+  onPdfLoaded = (numberOfPages) => {
 
     if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
     
