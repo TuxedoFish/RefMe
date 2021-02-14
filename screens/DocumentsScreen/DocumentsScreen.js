@@ -104,22 +104,9 @@ class DocumentsScreen extends React.Component {
     })
   }
 
-  openDocument = (id, url, type, title) => {
-    console.log("Running...")
-    const { articles  } = this.state
-    
-    // Pass in parameters to the page:
-    // id: the id of the page
-    // url: the url to the content
-    // type: type of content
-    // title: title of the content
-  	this.props.navigation.navigate('Articles', {
-      material_id: id,
-      id: id,
-      url: url,
-      type: type,
-      title: title,
-  	})
+  openDocument = (article, type) => {
+    // Pass the article and the content type to the article page
+  	this.props.navigation.navigate('Articles', { article: article, type: type })
   }
 
   search(event) {
@@ -200,12 +187,7 @@ class DocumentsScreen extends React.Component {
         		  return ( 
                 <TouchableOpacity 
                   onPress={ () => {
-                    this.openDocument(
-                      article.id,
-                      article.url,
-                      PAGE_TYPES.PDF,
-                      article.title
-                    )
+                    this.openDocument(article, PAGE_TYPES.PDF)
                   }} 
                   style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
                   <Card style={{...styles.card, backgroundColor: color}}>

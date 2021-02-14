@@ -7,9 +7,6 @@ import { Icon, Button} from 'native-base';
 import { Toolbar } from 'react-native-material-ui';
 import LoadingOverlay from '../../components/LoadingOverlay'
 
-// Axios - For making GET/POST requests
-import axios from 'axios';
-
 // Redux for persisting data across sessions
 import { connect } from 'react-redux';
 import * as referenceAction from '../../actions/referenceAction';
@@ -25,6 +22,9 @@ import { styles_dict } from './Styles.js'
 const styles = StyleSheet.create(styles_dict)
 import { generateCitation } from '../../utils/ReferenceUtils';
 
+// Helper for object comparisons
+import _ from 'lodash'
+
 class ArticlesScreen extends React.Component {
 
   constructor(props) {
@@ -36,10 +36,6 @@ class ArticlesScreen extends React.Component {
     // Get the details about the article navigating to
     const params = this.getPassedInParams()
 
-    // Assign the top navigation bar the title of the article
-    const { navigation } = this.props
-    navigation.setParams({ article_title: params.title })
-
     // Initial state defining the class
     this.state = {
       params: params,
@@ -47,34 +43,31 @@ class ArticlesScreen extends React.Component {
         visible: false,
         title: "Err"
       },
-      meta: {},
       currentpage: 1,
       length: 1
     }
   }
 
-  /* Gets the parameters passed into the screen when navigated to */
   getPassedInParams = () => {
+    // Get the passed in parameters 
     const { navigation } = this.props
-    return {
-      id: navigation.getParam('id', "err"),
-      url: navigation.getParam('url', "err"),
-      title: navigation.getParam('title', "Error: Title undefined"),
-      type: navigation.getParam('type', PAGE_TYPES.UNDEFINED),
-    }
+    let params = navigation.getParam('article', {})
+    const type = navigation.getParam('type', PAGE_TYPES.UNDEFINED)
+    // Also assign the top bar
+    navigation.setParams({ article_title: params.title })
+    return {...params, type: type}
   }
 
   /* For when the screen is opened to display a different doc */
   componentDidUpdate(prevProps, prevState) {
     // Checks if the component is being reloaded for a new document
-    const oldId = prevProps.navigation.getParam('id', "err")
-    const newId = this.props.navigation.getParam('id', 'err')
+    const oldParams = prevProps.navigation.getParam('article', {})
+    const newParams = this.props.navigation.getParam('article', {})
 
     // If it is then update the state
-    if(oldId != newId) { 
+    if(!_.isEqual(oldParams, newParams)) { 
       const params = this.getPassedInParams()
       this.setState({ params: params }) 
-      navigation.setParams({ article_title: params.title })
     }
   }
 
@@ -85,15 +78,15 @@ class ArticlesScreen extends React.Component {
   TODO: Use new history reducer
   */
   getCurrentPage = () => {
-    const { params: {id} } = this.state
-    const { history: {byId: historyItems} } = this.props
+    const { params: { id } } = this.state
+    const { history: { byId: historyItems } } = this.props
     return id in historyItems ? historyItems[id].currentpage : 1
   }
 
   /* Check whether the current document already has or not a reference */
   isDocumentCited = () => {
     const { citations: { allIds } } = this.props
-    const { params: {id} } = this.state
+    const { params: { id } } = this.state
     return allIds.includes(id)
   }
 
@@ -105,32 +98,26 @@ class ArticlesScreen extends React.Component {
   toggleReference = () => {
 
     // TODO: Should check the isReferenced variable directly from redux
-    const { params: {id}, meta } = this.state
+    const { params } = this.state
     const { deleteCitationItem, addCitationItem } = this.props
     const isReferenced = this.isDocumentCited()
 
     // Makes a call to the relevant redux action
     if(isReferenced) {
       // If there is already a reference then remove it (sync)
-      deleteCitationItem(id)
+      deleteCitationItem(params.id)
     } else { 
-      // if there is no reference then add it (async)
-      generateCitation(id, meta, 
-        (id, citation) => {
-          // Add to redux
-          addCitationItem(id, citation)
-          // Now notify user that has finished loading and set timeout
-          this.updateOverlay(true, "Finished!")
-          setTimeout( () => { this.updateOverlay(false, "None") }, 500)
-        },
-        (error) => {
-          console.log("Error: failed to generate citation")
-          console.log(error)
-          this.updateOverlay(true, "Error: " + error)
-          setTimeout( () => { this.updateOverlay(false, "None") }, 500)
-        })
+      // If there is no reference then add it (async)
+      let citation = params
+      citation['accessed_date'] = new Date().toISOString();
+      // Add the accessed date to the params
+      addCitationItem(citation.id, citation)
+
       // Now we set the state to loading...
       this.updateOverlay(true, "Generating Citation...")
+      window.setTimeout(() => { 
+        this.updateOverlay(false, "None")
+      }, 500)
     }
 
   }
@@ -193,8 +180,7 @@ class ArticlesScreen extends React.Component {
     if(this.DEBUGGING) { console.log(`number of pages: ${numberOfPages}`) }
     
     this.setState({ 
-      length: numberOfPages,
-      meta: extras
+      length: numberOfPages
     })
 
     if(this.getCurrentPage() != this.state.currentpage) {
