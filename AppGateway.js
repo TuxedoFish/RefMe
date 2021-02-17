@@ -156,7 +156,7 @@ class AppGateway extends React.Component {
             title: "Migrating [RefMe API] (0%)"
         }
       })
-      setTimeout( () => {this.nextAPIMigration() }, 500)
+      this.nextAPIMigration()
       
     } else {
       setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
@@ -173,7 +173,7 @@ class AppGateway extends React.Component {
 
       generateHistoryItemForAPI(historyId, {
         currentpage: oldItem.currentpage,
-        length: oldItem.numberofpages,
+        length: oldItem.length,
         lastmodified: oldItem.lastmodified
       }, this.historyItemReceivedForAPI, this.historyItemFailedForAPI)
     } else {
@@ -190,7 +190,7 @@ class AppGateway extends React.Component {
       },
       overlay: {
           visible: true,
-          title: `Migrating [RefMe API] (${Math.round((loaded+1) / total * 100)}%)`
+          title: `Migrating [RefMe API] (${Math.round((loaded) / total * 100)}%)`
       }
     })
 

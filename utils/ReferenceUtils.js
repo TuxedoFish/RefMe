@@ -3,7 +3,7 @@ import { CITATION_STYLES } from '../screens/ReferencesScreen/Constants'
 // Utility for configuring dates
 import { formatDateForReference, formatDateForHarvardReference, 
     getDateFromISOString, formatDateForMLAReference, 
-    formatDateForRSCReference, convertISOtoX5gon } from './DateUtils'
+    formatDateForRSCReference, getDateFromX5gonString } from './DateUtils'
 // For making API requests
 import axios from 'axios'
 // Page Types constants
@@ -82,7 +82,7 @@ export async function generateHistoryItemForAPI(id, oldItem, onSuccess, onFailed
         // Generate accessed date
         const accessed_date = new Date().toISOString();
         // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
-        const published_date = convertISOtoX5gon(article.creation_date)
+        const published_date = getDateFromX5gonString(article.creation_date).toISOString()
         // Get the author from PDF metadata
         const author = "Unknown"
         // Publisher
