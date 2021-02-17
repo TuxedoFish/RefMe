@@ -71,7 +71,7 @@ class HistoryScreen extends React.Component {
     // History is now stored in Redux - 
     // TODO: Sort these elements by date
     const { history: {byId, allIds} } = this.props
-
+    
     return (
       <>
         <Toolbar

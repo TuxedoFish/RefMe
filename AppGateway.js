@@ -156,7 +156,15 @@ class AppGateway extends React.Component {
             title: "Migrating [RefMe API] (0%)"
         }
       })
-      this.nextAPIMigration()
+
+      const historyId = apiMigrations[0]
+      const oldItem = historyItems[historyId]
+
+      generateHistoryItemForAPI(historyId, {
+        currentpage: oldItem.currentpage,
+        length: oldItem.length,
+        lastmodified: oldItem.lastmodified
+      }, this.historyItemReceivedForAPI, this.historyItemFailedForAPI)
       
     } else {
       setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
@@ -167,8 +175,8 @@ class AppGateway extends React.Component {
     const { loading: { total, loaded, apiMigrations } } = this.state
     const { history: { byId: historyItems } } = this.props
 
-    if(loaded < total) {
-      const historyId = apiMigrations[loaded]
+    if(loaded < total - 1) {
+      const historyId = apiMigrations[loaded + 1]
       const oldItem = historyItems[historyId]
 
       generateHistoryItemForAPI(historyId, {
@@ -181,7 +189,6 @@ class AppGateway extends React.Component {
     }
 
     // Update the visuals
-    console.log(loaded + " / " + total)
     this.setState({
       loading: {
           loaded: loaded + 1,
@@ -190,7 +197,7 @@ class AppGateway extends React.Component {
       },
       overlay: {
           visible: true,
-          title: `Migrating [RefMe API] (${Math.round((loaded) / total * 100)}%)`
+          title: `Migrating [RefMe API] (${Math.round((loaded + 1) / total * 100)}%)`
       }
     })
 
@@ -223,7 +230,7 @@ class AppGateway extends React.Component {
   runDebugScripts = () => { 
     const { clearCitations, clearHistory, history: { byId: historyItems } } = this.props
     const SHOULD_CLEAR = false
-    const SHOULD_PRINT_HISTORY = true
+    const SHOULD_PRINT_HISTORY = false
 
     if(SHOULD_CLEAR) { 
       clearHistory()

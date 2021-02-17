@@ -82,7 +82,7 @@ export async function generateHistoryItemForAPI(id, oldItem, onSuccess, onFailed
         // Generate accessed date
         const accessed_date = new Date().toISOString();
         // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
-        const published_date = getDateFromX5gonString(article.creation_date).toISOString()
+        const published_date = article.creation_date
         // Get the author from PDF metadata
         const author = "Unknown"
         // Publisher
@@ -256,7 +256,6 @@ Last name, First initial. (Year published). Article Title. Journal, [online] Vol
 export function generateHarvardCitation(citation, index) {
 
     // Destructure elements from citation 
-    console.log(citation)
     const { author, accessed_date, published_date, publisher, url, title} = citation
 
     // Formatting of data for formatting style
