@@ -136,11 +136,18 @@ class AppGateway extends React.Component {
   }
 
   runDebugScripts = () => { 
-    const { clearCitations, clearHistory } = this.props
-    const SHOULD_CLEAR = true
+    const { clearCitations, clearHistory, history: { byId: historyItems } } = this.props
+    const SHOULD_CLEAR = false
+    const SHOULD_PRINT_HISTORY = true
+
     if(SHOULD_CLEAR) { 
       clearHistory()
       clearCitations()
+    }
+
+    if(SHOULD_PRINT_HISTORY) {
+      console.log("HISTORY:")
+      console.log(historyItems)
     }
   }
 
