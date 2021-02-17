@@ -3,7 +3,155 @@ import { CITATION_STYLES } from '../screens/ReferencesScreen/Constants'
 // Utility for configuring dates
 import { formatDateForReference, formatDateForHarvardReference, 
     getDateFromISOString, formatDateForMLAReference, 
-    formatDateForRSCReference } from './DateUtils'
+    formatDateForRSCReference, convertISOtoX5gon } from './DateUtils'
+// For making API requests
+import axios from 'axios'
+// Page Types constants
+import { PAGE_TYPES } from '../screens/ArticlesScreen/Constants'
+
+export async function generateCitation(id, meta, onSuccess, onFailed) {
+    // Fetch data from X5gon and combine with pdf meta
+    // TODO: Implement this function
+    // 10937: {
+    //   id: 10937,
+    //   author: "John Doe",
+    //   title: "ML Algorithms",
+    //   uploadedDate: 30817921,
+    //   accessedDate: 30817921,
+    //   publisher: "VideoLectures.Net",
+    //   url: "https://www.website.com",
+    //   type: (ENUM)
+    //   pages: "1-4", (This will be a feature on the citation screen)
+    //   ...
+    // }
+
+    // Setup to make a query for the document
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+    const ENDPOINT = "/oer_materials/" + id
+    const url = PLATFORM_URL + ENDPOINT
+
+    axios.get(url, {} )
+    .then(res => {
+        // Get the response from x5gon
+        const article = res.data.oer_materials
+        // Generate accessed date
+        const accessed_date = new Date().toISOString();
+        // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
+        const published_date = meta.modDate ? meta.modDate : convertISOtoX5gon(article.creation_date)
+        // Get the author from PDF metadata
+        const author = meta.author==="" ? "Unknown" : meta.author
+        // Publisher
+        const publisher = article.provider.provider_name
+        // Link
+        const url = article.url
+        // Title of paper
+        const title = article.title
+
+        // Put it all together:
+        const citation = {
+            id: id,
+            accessed_date: accessed_date,
+            published_date: published_date,
+            author: author,
+            publisher: publisher,
+            url: url,
+            title: title,
+            type: PAGE_TYPES.PDF
+        }
+        // Callback function
+        onSuccess(id, citation)
+    })
+    .catch(error => {
+        onFailed(error)
+    })
+}
+
+export async function generateHistoryItemForAPI(id, oldItem, onSuccess, onFailed) {
+
+    // Setup to make a query for the document
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+    const ENDPOINT = "/oer_materials/" + id
+    const url = PLATFORM_URL + ENDPOINT
+    console.log("GENERATING")
+
+    axios.get(url, {} )
+    .then(res => {
+        
+        // Get the response from x5gon
+        const article = res.data.oer_materials
+        // Generate accessed date
+        const accessed_date = new Date().toISOString();
+        // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
+        const published_date = convertISOtoX5gon(article.creation_date)
+        // Get the author from PDF metadata
+        const author = "Unknown"
+        // Publisher
+        const publisher = article.provider.provider_name
+        // Link
+        const url = article.url
+        // Title of paper
+        const title = article.title
+
+        // Put it all together:
+        const historyItem = {
+            id: id,
+            currentpage: oldItem.currentpage,
+            length : oldItem.length,
+            lastmodified: oldItem.lastmodified,
+            author: author,
+            title: title,
+            publisher: publisher,
+            description: '',
+            published_date: published_date,
+            accessed_date: accessed_date,
+            url: url,
+            type: PAGE_TYPES.PDF
+        }
+        // Callback function
+        onSuccess(id, historyItem)
+    })
+    .catch(error => {
+        onFailed(error)
+    })
+}
+
+
+
+export async function generateHistoryItem(id, oldItem, onSuccess, onFailed) {
+
+    // Setup to make a query for the document
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+    const ENDPOINT = "/oer_materials/" + id
+    const url = PLATFORM_URL + ENDPOINT
+
+    axios.get(url, {} )
+    .then(res => {
+        // Get the response from x5gon
+        const article = res.data.oer_materials
+        // Generate accessed date
+        const lastmodified = new Date().toISOString();
+        // Link
+        const url = article.url
+        // Title of paper
+        const title = article.title
+
+        // Put it all together:
+        const historyItem = {
+            id: id,
+            currentpage: oldItem.currentpage,
+            length : oldItem.length,
+            lastmodified: lastmodified,
+            title: title,
+            url: url,
+            type: PAGE_TYPES.PDF
+        }
+        // Callback function
+        onSuccess(id, historyItem)
+    })
+    .catch(error => {
+      onFailed(error)
+    })
+}
 
 export function generateTextForCitation(citation, index, style) {
     switch(style) {

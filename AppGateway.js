@@ -15,7 +15,8 @@ import AppContainer from './navigation/AppNavigator';
 import LoadingOverlay from './components/LoadingOverlay';
 
 // Generation of data from old data
-import { generateCitation, generateHistoryItem } from './utils/ReferenceUtils';
+import { generateCitation, generateHistoryItem, 
+  generateHistoryItemForAPI} from './utils/ReferenceUtils';
  
 class AppGateway extends React.Component {
   
@@ -31,7 +32,8 @@ class AppGateway extends React.Component {
             loaded: 0,
             total: 0,
             citations: 0,
-            history: 0
+            history: 0,
+            apiMigrations: []
         }
     }
   }
@@ -65,7 +67,7 @@ class AppGateway extends React.Component {
             },
             overlay: {
                 visible: true,
-                title: "Migrating (0%)"
+                title: "Migrating [Separate Pages] (0%)"
             }
         })
 
@@ -74,8 +76,8 @@ class AppGateway extends React.Component {
 
         generateCitation(citationIndex, {author: ''}, this.citationReceived, this.citationFailed)
     } else {
+        this.migrateToAPI()
         this.runDebugScripts()
-        setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
     }
   }
 
@@ -105,7 +107,7 @@ class AppGateway extends React.Component {
     } else {
         // Finished migration
         resetState()
-        this.updateOverlay(false, 'None')
+        this.migrateToAPI()
         return
     }
 
@@ -119,10 +121,93 @@ class AppGateway extends React.Component {
         },
         overlay: {
             visible: true,
-            title: `Migrating (${Math.round((loaded+1) / total * 100)}%)`
+            title: `Migrating [Separate Pages] (${Math.round((loaded+1) / total * 100)}%)`
         }
     })
 
+  }
+
+  migrateToAPI = () => {
+
+    let isMigrationRequired = false
+    let apiMigrations = []
+    const { history: {byId: historyItems } } = this.props
+
+    Object.keys(historyItems).map((key, index) => { 
+
+      const item = historyItems[key]
+      
+      if(!("publisher" in item)) {
+        isMigrationRequired = true
+        apiMigrations.push(item.id)
+      }
+
+    })    
+
+    if(isMigrationRequired) {
+      this.setState({
+        loading: {
+            loaded: 0,
+            total: apiMigrations.length,
+            apiMigrations: apiMigrations
+        },
+        overlay: {
+            visible: true,
+            title: "Migrating [RefMe API] (0%)"
+        }
+      })
+      setTimeout( () => {this.nextAPIMigration() }, 500)
+      
+    } else {
+      setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
+    }
+  }
+
+  nextAPIMigration = () => {
+    const { loading: { total, loaded, apiMigrations } } = this.state
+    const { history: { byId: historyItems } } = this.props
+
+    if(loaded < total) {
+      const historyId = apiMigrations[loaded]
+      const oldItem = historyItems[historyId]
+
+      generateHistoryItemForAPI(historyId, {
+        currentpage: oldItem.currentpage,
+        length: oldItem.numberofpages,
+        lastmodified: oldItem.lastmodified
+      }, this.historyItemReceivedForAPI, this.historyItemFailedForAPI)
+    } else {
+      setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
+    }
+
+    // Update the visuals
+    console.log(loaded + " / " + total)
+    this.setState({
+      loading: {
+          loaded: loaded + 1,
+          total: apiMigrations.length,
+          apiMigrations: apiMigrations
+      },
+      overlay: {
+          visible: true,
+          title: `Migrating [RefMe API] (${Math.round((loaded+1) / total * 100)}%)`
+      }
+    })
+
+  }
+
+  historyItemReceivedForAPI = (id, historyItem) => {
+
+    // Add the loaded history item to the redux store
+    const { pushToHistory } = this.props
+    pushToHistory(id, historyItem)
+
+    // Generate the next item
+    this.nextAPIMigration()
+  }
+
+  historyItemFailedForAPI = (error) => {
+    console.log(`Failed to generate history updating to API: ${error}`)
   }
 
   citationReceived = (id, citation) => {
