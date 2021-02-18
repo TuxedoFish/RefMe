@@ -1,16 +1,14 @@
-// Takes id - x5gon document id
-// meta - PDF meta data
-// onSuccess(id, citation)
-
-import axios from 'axios'
-import { PAGE_TYPES } from "../screens/ArticlesScreen/Constants"
+// Definition of the different citation styles
 import { CITATION_STYLES } from '../screens/ReferencesScreen/Constants'
+// Utility for configuring dates
 import { formatDateForReference, formatDateForHarvardReference, 
-    getDateFromISOString, getDateFromX5gonString, 
-    formatDateForMLAReference, formatDateForRSCReference, 
-    convertISOtoX5gon} from './DateUtils'
+    getDateFromISOString, formatDateForMLAReference, 
+    formatDateForRSCReference, getDateFromX5gonString } from './DateUtils'
+// For making API requests
+import axios from 'axios'
+// Page Types constants
+import { PAGE_TYPES } from '../screens/ArticlesScreen/Constants'
 
-// onFailed(error)
 export async function generateCitation(id, meta, onSuccess, onFailed) {
     // Fetch data from X5gon and combine with pdf meta
     // TODO: Implement this function
@@ -64,9 +62,60 @@ export async function generateCitation(id, meta, onSuccess, onFailed) {
         onSuccess(id, citation)
     })
     .catch(error => {
-      onFailed(error)
+        onFailed(error)
     })
 }
+
+export async function generateHistoryItemForAPI(id, oldItem, onSuccess, onFailed) {
+
+    // Setup to make a query for the document
+    const PLATFORM_URL = "https://platform.x5gon.org/api/v1"
+    const ENDPOINT = "/oer_materials/" + id
+    const url = PLATFORM_URL + ENDPOINT
+    console.log("GENERATING")
+
+    axios.get(url, {} )
+    .then(res => {
+        
+        // Get the response from x5gon
+        const article = res.data.oer_materials
+        // Generate accessed date
+        const accessed_date = new Date().toISOString();
+        // Get the published date from PDF metadata (also option ref.creation_date===null ? ref.retrieved_date : ref.creation_date)
+        const published_date = article.creation_date
+        // Get the author from PDF metadata
+        const author = "Unknown"
+        // Publisher
+        const publisher = article.provider.provider_name
+        // Link
+        const url = article.url
+        // Title of paper
+        const title = article.title
+
+        // Put it all together:
+        const historyItem = {
+            id: id,
+            currentpage: oldItem.currentpage,
+            length : oldItem.length,
+            lastmodified: oldItem.lastmodified,
+            author: author,
+            title: title,
+            publisher: publisher,
+            description: '',
+            published_date: published_date,
+            accessed_date: accessed_date,
+            url: url,
+            type: PAGE_TYPES.PDF
+        }
+        // Callback function
+        onSuccess(id, historyItem)
+    })
+    .catch(error => {
+        onFailed(error)
+    })
+}
+
+
 
 export async function generateHistoryItem(id, oldItem, onSuccess, onFailed) {
 
@@ -154,7 +203,7 @@ export function generateAPACitation(citation, index) {
     const { author, accessed_date, published_date, publisher, url, title} = citation
 
     // Formatting of data for formatting style
-    const published_date_formatted = formatDateForMLAReference(getDateFromX5gonString(published_date))
+    const published_date_formatted = formatDateForMLAReference(getDateFromISOString(published_date))
     
     // Tenuous TODO: Make this better
     const names = author.split(' ')
@@ -174,7 +223,7 @@ export function generateMLACitation(citation, index) {
 
     // Formatting of data for formatting style
     const accessed_date_formatted = formatDateForHarvardReference(getDateFromISOString(accessed_date))
-    const published_date_formatted = formatDateForHarvardReference(getDateFromX5gonString(published_date))
+    const published_date_formatted = formatDateForHarvardReference(getDateFromISOString(published_date))
 
     // Return the raw text style of the citation
     return `${author}. ${title}. ${publisher}, ${published_date_formatted}, ${url}. Accessed ${accessed_date_formatted}.`
@@ -190,7 +239,7 @@ export function generateChicagoCitation(citation, index) {
 
     // Formatting of data for formatting style
     const accessed_date_formatted = formatDateForHarvardReference(getDateFromISOString(accessed_date))
-    const published_date_formatted = formatDateForHarvardReference(getDateFromX5gonString(published_date))
+    const published_date_formatted = formatDateForHarvardReference(getDateFromISOString(published_date))
     
     // Tenuous TODO: Make this better
     const names = author.split(' ')
@@ -211,7 +260,7 @@ export function generateHarvardCitation(citation, index) {
 
     // Formatting of data for formatting style
     const accessed_date_formatted = formatDateForHarvardReference(getDateFromISOString(accessed_date))
-    const published_year = getDateFromX5gonString(published_date).getFullYear()
+    const published_year = getDateFromISOString(published_date).getFullYear()
     
     // Tenuous TODO: Make this better
     const names = author.split(' ')
@@ -235,7 +284,7 @@ export function generateIEEECitation(citation, index) {
 
     // Formatting of data for formatting style
     const accessed_date_formatted = formatDateForReference(getDateFromISOString(accessed_date))
-    const published_year = getDateFromX5gonString(published_date).getFullYear()
+    const published_year = getDateFromISOString(published_date).getFullYear()
 
     // Return the raw text style of the citation
     return `[${index+1}] ${author}, "${title}" ${publisher}, ${published_year}. [Online]. Available: ${url}. [Accessed: ${accessed_date_formatted}]`
@@ -252,8 +301,8 @@ export function generateVancouverCitation(citation, index) {
     const { author, accessed_date, published_date, publisher, url, title} = citation
 
     // Formatting of data for formatting style
-    const published_date_formatted = formatDateForHarvardReference(getDateFromX5gonString(published_date))
-    const published_year = getDateFromX5gonString(published_date).getFullYear()
+    const published_date_formatted = formatDateForHarvardReference(getDateFromISOString(published_date))
+    const published_year = getDateFromISOString(published_date).getFullYear()
     
     // Tenuous TODO: Make this better
     const names = author.split(' ')
@@ -274,7 +323,7 @@ export function generateNatureCitation(citation, index) {
     const { author, accessed_date, published_date, publisher, url, title} = citation
 
     // Formatting of data for formatting style
-    const published_date_year = getDateFromX5gonString(published_date).getFullYear()
+    const published_date_year = getDateFromISOString(published_date).getFullYear()
     
     // Tenuous TODO: Make this better
     const names = author.split(' ')
