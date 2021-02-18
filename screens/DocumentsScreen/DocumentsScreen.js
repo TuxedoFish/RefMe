@@ -68,13 +68,15 @@ class DocumentsScreen extends React.Component {
       const { data: { result }} = response
       let { articles, nextPage } = this.state
 
-      if(reset) { articles = [] }
-      result.map( (article) => { articles.push(article) })
+      let newArticles = [...articles]
+      if(reset) { newArticles = [] }
+      result.map( (article) => { newArticles.push(article) })
 
       nextPage = nextPage + 1
+      console.log(nextPage)
 
 			this.setState({
-        articles: articles,
+        articles: newArticles,
         hasRequestFailed: false,
         nextPage: nextPage,
         stillArticles: true
