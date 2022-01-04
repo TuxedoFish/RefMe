@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import * as referenceAction from './actions/referenceAction';
 import * as historyAction from './actions/history/actions';
 import * as citationAction from './actions/citation/actions'
+import * as configAction from './actions/config/actions'
 
 // The main navigation container
 import AppContainer from './navigation/AppNavigator';
@@ -42,9 +43,17 @@ class AppGateway extends React.Component {
 
   componentDidMount() {
     // First fetch configuration from S3 before advancing
+    this.setState({
+      overlay: {
+        visible: true,
+        title: `Fetching config`
+      }
+    })
     getConfig().then(
       (config) => {
         // Response from S3
+        const { updateConfig } = this.props
+        updateConfig(config)
         this.startMigration()
       },
       (error) => {
@@ -229,7 +238,6 @@ class AppGateway extends React.Component {
   }
 
   citationReceived = (id, citation) => {
-
     // Add the loaded citation to the redux store
     const { addCitationItem } = this.props
     addCitationItem(id, citation)
@@ -259,7 +267,6 @@ class AppGateway extends React.Component {
   }
 
   historyItemReceived = (id, historyItem) => {
-
     // Add the loaded history item to the redux store
     const { pushToHistory } = this.props
     pushToHistory(id, historyItem)
@@ -269,7 +276,7 @@ class AppGateway extends React.Component {
   }
 
   historyItemFailed = (error) => {
-    console.log(`Failed to generate citation: ${error}`)
+    console.error(`Failed to generate citation: ${error}`)
   }
 
   updateOverlay = (isVisible, title) => {
@@ -282,7 +289,6 @@ class AppGateway extends React.Component {
   }
 
   render() {
-
     const { overlay: { visible: isOverlayVisible, title: overlayTitle } } = this.state
 
     if (!isOverlayVisible) {
@@ -315,6 +321,8 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
+  // Config actions
+  updateConfig: (config) => dispatch(configAction.updateConfig(config)),
   // History actions
   pushToHistory: (id, historyItem) => dispatch(historyAction.pushToHistory(id, historyItem)),
   clearHistory: () => dispatch(historyAction.clearHistory()),

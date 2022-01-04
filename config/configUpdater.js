@@ -5,7 +5,7 @@ const getConfig = () => {
     return new Promise(async (resolve, reject) => {
         // This bucket should always exist
         S3_BUCKET = "liversedge-application-configs";
-        S3_FILE_NAME = "refme.txt";
+        S3_FILE_NAME = "refme.json";
 
         // Initialize the Amazon Cognito credentials provider
         const region = "eu-west-2";
@@ -24,14 +24,14 @@ const getConfig = () => {
         // Create a new service object
         var s3 = new AWS.S3();
 
-        s3.getObject(params, function(err, data) {
+        s3.getObject(params, function (err, data) {
             // Handle any error and exit
             if (err)
                 reject(err);
 
             // No error happened
             // Convert Body from a Buffer to a String
-            let objectData = data.Body.toString('utf-8'); // Use the encoding necessary
+            let objectData = JSON.parse(data.Body.toString('utf-8')); // Use the encoding necessary
             resolve(objectData)
         });
     });
