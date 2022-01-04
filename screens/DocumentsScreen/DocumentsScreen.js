@@ -59,7 +59,6 @@ class DocumentsScreen extends React.Component {
     this.updateOverlay(true, "Loading...")
 
     // Using my API hosted on AWS
-    // http://refme-env.eba-dp8b9qmx.eu-west-2.elasticbeanstalk.com/articles/?query_string=Machine%20Learning&page=1
     const URL = "https://34v4w4wx4l.execute-api.eu-west-2.amazonaws.com/default/getArticles/"
     axios.get(URL, {
       params: {
