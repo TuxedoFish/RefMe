@@ -55,11 +55,14 @@ class DocumentsScreen extends React.Component {
   }
 
   getArticles(keyword, page, reset = false) {
-
     this.updateOverlay(true, "Loading...")
 
-    // Using my API hosted on AWS
-    const URL = "https://34v4w4wx4l.execute-api.eu-west-2.amazonaws.com/default/getArticles/"
+    // The link to the API is dynamic and can be updated via S3 when needed but is currently using lambdas
+    const { config } = this.props
+    const URL = config.ARTICLES_API.get ?? "https://34v4w4wx4l.execute-api.eu-west-2.amazonaws.com/default/getArticles/"
+
+    console.log(config)
+    console.log(`Using: ${URL}`)
     axios.get(URL, {
       params: {
         query_string: keyword,
@@ -238,7 +241,8 @@ DocumentsScreen.navigationOptions = {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    references: state.references.ids
+    references: state.references.ids,
+    config: state.config.raw
   }
 };
 

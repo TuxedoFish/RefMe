@@ -18,7 +18,8 @@ const getConfig = () => {
 
         var params = {
             Bucket: S3_BUCKET,
-            Key: S3_FILE_NAME
+            Key: S3_FILE_NAME,
+            ResponseCacheControl: "no-cache"
         }
 
         // Create a new service object
