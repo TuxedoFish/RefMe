@@ -1,9 +1,13 @@
 import React from 'react';
-import { ScrollView, StyleSheet, StatusBar, View, 
-  TouchableOpacity, Image} from 'react-native';
+import {
+  ScrollView, StyleSheet, StatusBar, View,
+  TouchableOpacity, Image
+} from 'react-native';
 import axios from 'axios';
-import { Container, Header, Content, Card, CardItem, 
-  Text, Body, Button } from 'native-base';
+import {
+  Container, Header, Content, Card, CardItem,
+  Text, Body, Button
+} from 'native-base';
 import moment from 'moment';
 
 import { connect } from 'react-redux';
@@ -20,16 +24,16 @@ import LoadingOverlay from '../../components/LoadingOverlay';
 const styles = StyleSheet.create(styles_dict)
 
 class DocumentsScreen extends React.Component {
-	
+
   constructor(props) {
-  	super(props)
-  	
+    super(props)
+
     this.DEBUGGING = false
 
-  	this.getArticles = this.getArticles.bind(this)
+    this.getArticles = this.getArticles.bind(this)
     this.search = this.search.bind(this)
-  	
-  	this.state = {
+
+    this.state = {
       articles: [],
       nextPage: 1,
       keyword: "machine learning",
@@ -45,53 +49,55 @@ class DocumentsScreen extends React.Component {
         "#badc58",
         "#7ed6df"
       ]
-  	}
+    }
 
     this.getArticles(this.state.keyword, this.state.nextPage);
   }
 
-  getArticles(keyword, page, reset=false) {
-
+  getArticles(keyword, page, reset = false) {
     this.updateOverlay(true, "Loading...")
 
-    // Using my API hosted on AWS
-    // http://refme-env.eba-dp8b9qmx.eu-west-2.elasticbeanstalk.com/articles/?query_string=Machine%20Learning&page=1
-    const URL = "http://refme-env.eba-dp8b9qmx.eu-west-2.elasticbeanstalk.com/articles/"
+    // The link to the API is dynamic and can be updated via S3 when needed but is currently using lambdas
+    const { config } = this.props
+    const URL = config.ARTICLES_API.get ?? "https://34v4w4wx4l.execute-api.eu-west-2.amazonaws.com/default/getArticles/"
+
+    console.log(config)
+    console.log(`Using: ${URL}`)
     axios.get(URL, {
       params: {
         query_string: keyword,
         page: page,
       }
     })
-    .then(response => {
+      .then(response => {
 
-      const { data: { result }} = response
-      let { articles, nextPage } = this.state
+        const { data: { result } } = response
+        let { articles, nextPage } = this.state
 
-      let newArticles = [...articles]
-      if(reset) { newArticles = [] }
-      result.map( (article) => { newArticles.push(article) })
+        let newArticles = [...articles]
+        if (reset) { newArticles = [] }
+        result.map((article) => { newArticles.push(article) })
 
-      nextPage = nextPage + 1
-      console.log(nextPage)
+        nextPage = nextPage + 1
+        console.log(nextPage)
 
-			this.setState({
-        articles: newArticles,
-        hasRequestFailed: false,
-        nextPage: nextPage,
-        stillArticles: true
+        this.setState({
+          articles: newArticles,
+          hasRequestFailed: false,
+          nextPage: nextPage,
+          stillArticles: true
+        })
+        this.updateOverlay(false, "None")
       })
-      this.updateOverlay(false, "None")
-    })
-		.catch(error => {
-      // Unable to load the data (probably a network error)
-      this.setState({
-        hasLoaded: false,
-        hasRequestFailed: true
+      .catch(error => {
+        // Unable to load the data (probably a network error)
+        this.setState({
+          hasLoaded: false,
+          hasRequestFailed: true
+        })
+        this.updateOverlay(false, "None")
+        console.log(error);
       })
-      this.updateOverlay(false, "None")
-			console.log(error);
-		})
 
     // Initial V1-2 used exclusively x5gon API:
     // https://platform.x5gon.org/api/v1/recommend/oer_materials/?text=Machin%20Learning&type=text&page=1
@@ -108,14 +114,14 @@ class DocumentsScreen extends React.Component {
 
   openDocument = (article, type) => {
     // Pass the article and the content type to the article page
-  	this.props.navigation.navigate('Articles', { article: article, type: type })
+    this.props.navigation.navigate('Articles', { article: article, type: type })
   }
 
   search(event) {
     const value = event.nativeEvent.text
-    this.setState({ 
-      keyword : value, 
-      nextPage : 1,
+    this.setState({
+      keyword: value,
+      nextPage: 1,
     })
 
     this.getArticles(value, 1, true)
@@ -124,96 +130,96 @@ class DocumentsScreen extends React.Component {
   render() {
 
     const { articles, hasLoaded, stillArticles, colors, hasRequestFailed,
-      overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
+      overlay: { visible: isOverlayVisible, title: overlayTitle } } = this.state
 
-    if(this.DEBUGGING) { console.log("DocumentsScreen.render: has it loaded? " + hasLoaded) }
+    if (this.DEBUGGING) { console.log("DocumentsScreen.render: has it loaded? " + hasLoaded) }
 
     return (
       <>
         <Toolbar
           centerElement="RefMe"
           searchable={{
-              autoFocus: true,
-              placeholder: 'Search',
-              onSubmitEditing: this.search,
+            autoFocus: true,
+            placeholder: 'Search',
+            onSubmitEditing: this.search,
           }}
         />
         {/* When an error has occurred */}
         {hasRequestFailed ? (
           <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.centerContainer}>
-              
-              <Card style={{...styles.card, backgroundColor: '#ff7979'}}>
-                <CardItem style={{...styles.card, backgroundColor: '#ff7979'}}>
+
+              <Card style={{ ...styles.card, backgroundColor: '#ff7979' }}>
+                <CardItem style={{ ...styles.card, backgroundColor: '#ff7979' }}>
                   <Body>
                     <Text style={styles.header1Text}>{"Network Error"}</Text>
                   </Body>
                 </CardItem>
-                
-                <CardItem style={{...styles.header, backgroundColor: '#ff7979'}}>
-                  <Body style={{alignItems: 'center'}}>
-                    <NetworkErrorImage width={150} height={120}/>
+
+                <CardItem style={{ ...styles.header, backgroundColor: '#ff7979' }}>
+                  <Body style={{ alignItems: 'center' }}>
+                    <NetworkErrorImage width={150} height={120} />
                   </Body>
                 </CardItem>
-                <CardItem style={{...styles.footer, backgroundColor: '#ff7979'}}>
+                <CardItem style={{ ...styles.footer, backgroundColor: '#ff7979' }}>
                   <Text style={styles.baseText}>{"In order to run this app you must have a network connection. Please check your network connection and try again. If the problem persists please get in contact directly with me at harry@harrysrepairs.co.uk "}</Text>
                 </CardItem>
               </Card>
 
               <Button
-                  style={styles.button}
-                  onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
-                >
+                style={styles.button}
+                onPress={() => { this.getArticles(this.state.keyword, this.state.nextPage) }}
+              >
                 <Text>Reload Articles</Text>
-              </Button>   
+              </Button>
             </View>
           </ScrollView>
         ) : null}
         {/* When the data hasn't loaded AND no error occurrs */}
         {!hasRequestFailed ? (
           <ScrollView contentContainerStyle={styles.container}>
-            
-            { !isOverlayVisible ? (
-              <View style={{...styles.centerContainer, alignItems: "flex-start"}}>
-                <Text style={{ ...styles.header5Text, paddingTop : 0, paddingBottom: 3 }}>
+
+            {!isOverlayVisible ? (
+              <View style={{ ...styles.centerContainer, alignItems: "flex-start" }}>
+                <Text style={{ ...styles.header5Text, paddingTop: 0, paddingBottom: 3 }}>
                   {articles.length + " results for " + this.state.keyword + ":"}
                 </Text>
               </View>
-            ) : null }
+            ) : null}
 
-        		{ articles.map((article, i) => {
+            {articles.map((article, i) => {
               var author = article.author
 
-              const color = colors[i%5]
+              const color = colors[i % 5]
 
-        		  return ( 
-                <TouchableOpacity 
-                  onPress={ () => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
                     this.openDocument(article, PAGE_TYPES.PDF)
-                  }} 
-                  style={{...styles.card, marginTop: 5, marginBottom: 5}} key={i}>
-                  <Card style={{...styles.card, backgroundColor: color}}>
-                		<CardItem style={{...styles.header, backgroundColor: color}}>
-                			<Body>
+                  }}
+                  style={{ ...styles.card, marginTop: 5, marginBottom: 5 }} key={i}>
+                  <Card style={{ ...styles.card, backgroundColor: color }}>
+                    <CardItem style={{ ...styles.header, backgroundColor: color }}>
+                      <Body>
                         <Text style={styles.header1Text}>{article.title}</Text>
                       </Body>
-                		</CardItem>
-                    <CardItem style={{...styles.footer,backgroundColor: color}}>
-                      	<Text numberOfLines={4} style={styles.baseText}>
-                          {article.description==null ? "No description" : article.description}
-                        </Text>    
-                  	</CardItem>
-                	</Card>
+                    </CardItem>
+                    <CardItem style={{ ...styles.footer, backgroundColor: color }}>
+                      <Text numberOfLines={4} style={styles.baseText}>
+                        {article.description == null ? "No description" : article.description}
+                      </Text>
+                    </CardItem>
+                  </Card>
                 </TouchableOpacity>
               );
             })}
             {stillArticles && !isOverlayVisible ? (
               <Button
                 style={styles.button}
-                onPress={ () => {this.getArticles(this.state.keyword, this.state.nextPage)} }
+                onPress={() => { this.getArticles(this.state.keyword, this.state.nextPage) }}
               >
                 <Text>Load more...</Text>
-            </Button>   
+              </Button>
             ) : null}
           </ScrollView>
         ) : null}
@@ -235,7 +241,8 @@ DocumentsScreen.navigationOptions = {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    references: state.references.ids
+    references: state.references.ids,
+    config: state.config.raw
   }
 };
 

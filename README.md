@@ -13,6 +13,32 @@ var sharedBlacklist = [
 ];
 ```
 
+# On WSL
+
+## Getting up and running on Windows as normal:
+
+1. Install adb on Windows AND WSL
+
+2. Install Android Studio
+
+3. Install 29 & 28 Android SDK 
+
+4. Install Java JDK: https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html [JDK 11 to be safe] 
+
+5. Set JAVA_HOME on Windows to location of JDK + add to PATH (requires restart of VSCode)
+
+6. Set ANDROID_SDK_ROOT to location of Android SDK (See Android Studio)
+
+7. Connect device as normal enabling USB debugging
+
+## Connecting to WSL:
+
+1. Connect device
+
+2. On Windows run: `adb tcpip 5555`
+
+3. On WSL run: `adb connect [ip device]:5555`
+
 # To run
 
 Notes: Requires internet accesss
