@@ -15,34 +15,49 @@ import AppContainer from './navigation/AppNavigator';
 import LoadingOverlay from './components/LoadingOverlay';
 
 // Generation of data from old data
-import { generateCitation, generateHistoryItem, 
-  generateHistoryItemForAPI} from './utils/ReferenceUtils';
- 
+import {
+  generateCitation, generateHistoryItem,
+  generateHistoryItemForAPI
+} from './utils/ReferenceUtils';
+import { getConfig } from './config/configUpdater';
+
 class AppGateway extends React.Component {
-  
   constructor() {
     super()
 
     this.state = {
-        overlay: {
-            visible: true,
-            title: `Starting up...`
-        },
-        loading: {
-            loaded: 0,
-            total: 0,
-            citations: 0,
-            history: 0,
-            apiMigrations: []
-        }
+      overlay: {
+        visible: true,
+        title: `Starting up...`
+      },
+      loading: {
+        loaded: 0,
+        total: 0,
+        citations: 0,
+        history: 0,
+        apiMigrations: []
+      }
     }
   }
 
   componentDidMount() {
+    // First fetch configuration from S3 before advancing
+    getConfig().then(
+      (config) => {
+        // Response from S3
+        this.startMigration()
+      },
+      (error) => {
+        // No config has been fetched
+        this.startMigration()
+      }
+    )
+  }
 
+  startMigration = () => {
     // Check whether currently have old references / history
     const { references, documents } = this.props
-    
+
     // Calculating what remains
     const oldReferences = references.length
     const oldHistory = Object.keys(documents).length
@@ -51,109 +66,106 @@ class AppGateway extends React.Component {
     const isMigrationRequired = total > 0
 
     // If migrating then setup the initial settings
-    if(isMigrationRequired) {
+    if (isMigrationRequired) {
+      // Before we migrate we need to be sure the new redux stores are empty
+      const { clearCitations, clearHistory } = this.props
+      clearCitations()
+      clearHistory()
 
-        // Before we migrate we need to be sure the new redux stores are empty
-        const { clearCitations, clearHistory } = this.props
-        clearCitations()
-        clearHistory()
+      this.setState({
+        loading: {
+          loaded: 0,
+          total: total,
+          citations: oldReferences,
+          history: oldHistory
+        },
+        overlay: {
+          visible: true,
+          title: "Migrating [Separate Pages] (0%)"
+        }
+      })
 
-        this.setState({
-            loading: {
-                loaded: 0,
-                total: total,
-                citations: oldReferences,
-                history: oldHistory
-            },
-            overlay: {
-                visible: true,
-                title: "Migrating [Separate Pages] (0%)"
-            }
-        })
+      // Generate the first citation
+      const citationIndex = references[0]
 
-        // Generate the first citation
-        const citationIndex = references[0]
-
-        generateCitation(citationIndex, {author: ''}, this.citationReceived, this.citationFailed)
+      generateCitation(citationIndex, { author: '' }, this.citationReceived, this.citationFailed)
     } else {
-        this.migrateToAPI()
-        this.runDebugScripts()
+      this.migrateToAPI()
+      this.runDebugScripts()
     }
   }
 
   nextMigration = () => {
-
     // First we want to migrate the citations  
-    const { loading: {total, loaded, citations, history}} = this.state
+    const { loading: { total, loaded, citations, history } } = this.state
     const { references, documents, resetState } = this.props
 
     // If the amount loaded is less then the number of citations
-    if(loaded < citations-1) {
-        // TODO: convert creation date -> modDate format
-        const citationIndex = references[loaded+1]
+    if (loaded < citations - 1) {
+      // TODO: convert creation date -> modDate format
+      const citationIndex = references[loaded + 1]
 
-        generateCitation(citationIndex, {author: ''},
-            this.citationReceived, this.citationFailed)
-    } else if(loaded < total-1) {
-        // Now load the history items
-        const historyIndex = loaded-citations+1
-        const historyId = Object.keys(documents)[historyIndex]
-        const oldItem = documents[historyId]
+      generateCitation(citationIndex, { author: '' },
+        this.citationReceived, this.citationFailed)
+    } else if (loaded < total - 1) {
+      // Now load the history items
+      const historyIndex = loaded - citations + 1
+      const historyId = Object.keys(documents)[historyIndex]
+      const oldItem = documents[historyId]
 
-        generateHistoryItem(historyId, {
-            currentpage: oldItem.currentpage,
-            length: oldItem.numberofpages
-        }, this.historyItemReceived, this.historyItemFailed)
+      generateHistoryItem(historyId, {
+        currentpage: oldItem.currentpage,
+        length: oldItem.numberofpages
+      }, this.historyItemReceived, this.historyItemFailed)
     } else {
-        // Finished migration
-        resetState()
-        this.migrateToAPI()
-        return
+      // Finished migration
+      resetState()
+      this.migrateToAPI()
+      return
     }
 
     // Update the visuals
     this.setState({
-        loading: {
-            total: total,
-            citations: citations,
-            history: history,
-            loaded: loaded+1
-        },
-        overlay: {
-            visible: true,
-            title: `Migrating [Separate Pages] (${Math.round((loaded+1) / total * 100)}%)`
-        }
+      loading: {
+        total: total,
+        citations: citations,
+        history: history,
+        loaded: loaded + 1
+      },
+      overlay: {
+        visible: true,
+        title: `Migrating [Separate Pages] (${Math.round((loaded + 1) / total * 100)}%)`
+      }
     })
 
   }
 
   migrateToAPI = () => {
-
     let isMigrationRequired = false
     let apiMigrations = []
-    const { history: {byId: historyItems } } = this.props
+    const { history: { byId: historyItems } } = this.props
 
-    Object.keys(historyItems).map((key, index) => { 
+    Object.keys(historyItems).map((key, index) => {
 
       const item = historyItems[key]
-      
-      if(!("publisher" in item)) {
+
+      if (!("publisher" in item)) {
         isMigrationRequired = true
         apiMigrations.push(item.id)
       }
 
-    })    
+    })
 
-    if(isMigrationRequired) {
+    if (isMigrationRequired) {
       this.setState({
         loading: {
-            loaded: 0,
-            total: apiMigrations.length,
-            apiMigrations: apiMigrations
+          loaded: 0,
+          total: apiMigrations.length,
+          apiMigrations: apiMigrations
         },
         overlay: {
-            visible: true,
-            title: "Migrating [RefMe API] (0%)"
+          visible: true,
+          title: "Migrating [RefMe API] (0%)"
         }
       })
 
@@ -165,9 +177,9 @@ class AppGateway extends React.Component {
         length: oldItem.length,
         lastmodified: oldItem.lastmodified
       }, this.historyItemReceivedForAPI, this.historyItemFailedForAPI)
-      
+
     } else {
-      setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
+      setTimeout(() => { this.updateOverlay(false, 'None') }, 500)
     }
   }
 
@@ -175,7 +187,7 @@ class AppGateway extends React.Component {
     const { loading: { total, loaded, apiMigrations } } = this.state
     const { history: { byId: historyItems } } = this.props
 
-    if(loaded < total - 1) {
+    if (loaded < total - 1) {
       const historyId = apiMigrations[loaded + 1]
       const oldItem = historyItems[historyId]
 
@@ -185,26 +197,25 @@ class AppGateway extends React.Component {
         lastmodified: oldItem.lastmodified
       }, this.historyItemReceivedForAPI, this.historyItemFailedForAPI)
     } else {
-      setTimeout( () => { this.updateOverlay(false, 'None') }, 500)
+      setTimeout(() => { this.updateOverlay(false, 'None') }, 500)
     }
 
     // Update the visuals
     this.setState({
       loading: {
-          loaded: loaded + 1,
-          total: apiMigrations.length,
-          apiMigrations: apiMigrations
+        loaded: loaded + 1,
+        total: apiMigrations.length,
+        apiMigrations: apiMigrations
       },
       overlay: {
-          visible: true,
-          title: `Migrating [RefMe API] (${Math.round((loaded + 1) / total * 100)}%)`
+        visible: true,
+        title: `Migrating [RefMe API] (${Math.round((loaded + 1) / total * 100)}%)`
       }
     })
 
   }
 
   historyItemReceivedForAPI = (id, historyItem) => {
-
     // Add the loaded history item to the redux store
     const { pushToHistory } = this.props
     pushToHistory(id, historyItem)
@@ -214,7 +225,7 @@ class AppGateway extends React.Component {
   }
 
   historyItemFailedForAPI = (error) => {
-    console.log(`Failed to generate history updating to API: ${error}`)
+    console.error(`Failed to generate history updating to API: ${error}`)
   }
 
   citationReceived = (id, citation) => {
@@ -227,17 +238,17 @@ class AppGateway extends React.Component {
     this.nextMigration()
   }
 
-  runDebugScripts = () => { 
+  runDebugScripts = () => {
     const { clearCitations, clearHistory, history: { byId: historyItems } } = this.props
     const SHOULD_CLEAR = false
     const SHOULD_PRINT_HISTORY = false
 
-    if(SHOULD_CLEAR) { 
+    if (SHOULD_CLEAR) {
       clearHistory()
       clearCitations()
     }
 
-    if(SHOULD_PRINT_HISTORY) {
+    if (SHOULD_PRINT_HISTORY) {
       console.log("HISTORY:")
       console.log(historyItems)
     }
@@ -272,21 +283,21 @@ class AppGateway extends React.Component {
 
   render() {
 
-    const { overlay: {visible: isOverlayVisible, title: overlayTitle} } = this.state
+    const { overlay: { visible: isOverlayVisible, title: overlayTitle } } = this.state
 
-    if(!isOverlayVisible) {
-        return (
-            <>
-                {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-                <AppContainer />
-            </>
-        );
+    if (!isOverlayVisible) {
+      return (
+        <>
+          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+          <AppContainer />
+        </>
+      );
     } else {
-        return (
-            <>
-                <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
-            </>
-        )
+      return (
+        <>
+          <LoadingOverlay visible={isOverlayVisible} title={overlayTitle} />
+        </>
+      )
     }
   }
 
